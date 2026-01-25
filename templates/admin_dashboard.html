@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #004e92, #000428);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header-nav {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .back-btn:hover {
+            background: #555;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #7ff7ff;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #aaa;
+        }
+
+        .stat-value {
+            color: #0ff;
+            font-weight: bold;
+        }
+
+        .activity-log {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .activity-log h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #7ff7ff;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .log-table th {
+            background: rgba(0,102,255,0.3);
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .log-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .log-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .action-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .action-login { background: rgba(0, 200, 0, 0.5); }
+        .action-upload { background: rgba(0, 150, 255, 0.5); }
+        .action-delete { background: rgba(255, 100, 100, 0.5); }
+        .action-reassign { background: rgba(255, 150, 0, 0.5); }
+        .action-other { background: rgba(150, 150, 150, 0.5); }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background: rgba(0,150,0,0.6);
+            color: white;
+            border: 1px solid rgba(0,200,0,0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(0,200,0,0.8);
+        }
+
+        .loading {
+            text-align: center;
+            color: #aaa;
+            padding: 40px;
+        }
+
+        .error {
+            color: #ff7f7f;
+            background: rgba(255,50,50,0.2);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .log-table {
+                font-size: 11px;
+            }
+
+            .log-table th, .log-table td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Admin Dashboard</h1>
+    <div class="header-nav">
+        <a href="/admin/users" class="back-btn">← Users</a>
+        <a href="/admin/uploads" class="back-btn">Uploads</a>
+        <a href="/" class="back-btn">Home</a>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Storage Statistics -->
+        <div class="card">
+            <h2>Storage Statistics</h2>
+            <div class="stat-row">
+                <span class="stat-label">Total Storage</span>
+                <span class="stat-value"><span id="totalSize">-</span> MB</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Total Files</span>
+                <span class="stat-value" id="fileCount">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Images</span>
+                <span class="stat-value"><span id="imageSize">-</span> MB</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Videos</span>
+                <span class="stat-value"><span id="videoSize">-</span> MB</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Text</span>
+                <span class="stat-value"><span id="textSize">-</span> MB</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Other</span>
+                <span class="stat-value"><span id="otherSize">-</span> MB</span>
+            </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="card">
+            <h2>Storage by User</h2>
+            <div id="userStats">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="activity-log">
+        <h2>Recent Activity</h2>
+        <button class="refresh-btn" onclick="loadData()">Refresh</button>
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Action</th>
+                    <th style="width: 15%;">User</th>
+                    <th style="width: 50%;">Details</th>
+                    <th style="width: 20%;">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="activityLog">
+                <tr>
+                    <td colspan="4" class="loading">Loading activity log...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function loadData() {
+        loadStats();
+        loadActivity();
+    }
+
+    function loadStats() {
+        fetch('/admin/api/stats')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    const stats = data.stats;
+                    document.getElementById('totalSize').textContent = stats.total_size_mb;
+                    document.getElementById('fileCount').textContent = stats.file_count;
+                    document.getElementById('imageSize').textContent = stats.by_type_mb.image;
+                    document.getElementById('videoSize').textContent = stats.by_type_mb.video;
+                    document.getElementById('textSize').textContent = stats.by_type_mb.text;
+                    document.getElementById('otherSize').textContent = stats.by_type_mb.other;
+
+                    // Display top users
+                    const userStatsDiv = document.getElementById('userStats');
+                    userStatsDiv.innerHTML = '';
+
+                    if (Object.keys(stats.by_user_mb).length === 0) {
+                        userStatsDiv.innerHTML = '<div style="color: #aaa;">No files uploaded yet</div>';
+                        return;
+                    }
+
+                    // Sort users by storage usage
+                    const sortedUsers = Object.entries(stats.by_user_mb)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10);
+
+                    sortedUsers.forEach(([user, size]) => {
+                        const row = document.createElement('div');
+                        row.className = 'stat-row';
+                        row.innerHTML = `<span class="stat-label">${user}</span><span class="stat-value">${size} MB</span>`;
+                        userStatsDiv.appendChild(row);
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading stats:', err));
+    }
+
+    function loadActivity() {
+        fetch('/admin/api/activity')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    const tbody = document.getElementById('activityLog');
+                    tbody.innerHTML = '';
+
+                    if (data.activity.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #aaa;">No activity recorded yet</td></tr>';
+                        return;
+                    }
+
+                    data.activity.forEach(entry => {
+                        const row = document.createElement('tr');
+                        
+                        // Determine action badge color
+                        let badgeClass = 'action-other';
+                        if (entry.action.includes('LOGIN')) badgeClass = 'action-login';
+                        else if (entry.action.includes('UPLOAD')) badgeClass = 'action-upload';
+                        else if (entry.action.includes('DELETE')) badgeClass = 'action-delete';
+                        else if (entry.action.includes('REASSIGN')) badgeClass = 'action-reassign';
+
+                        row.innerHTML = `
+                            <td><span class="action-badge ${badgeClass}">${entry.action}</span></td>
+                            <td>${entry.username}</td>
+                            <td>${entry.details}</td>
+                            <td>${entry.timestamp}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading activity:', err));
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadData);
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadData, 30000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Video Gallery</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #004e92, #000428);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .video-box {
+            background: rgba(255,255,255,0.08);
+            padding: 12px;
+            border-radius: 10px;
+            width: 320px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+        }
+
+        .gallery-video {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+
+        .filename {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #ddd;
+            opacity: 0.9;
+            word-wrap: break-word;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 18px;
+            background: #333;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Video Gallery</h1>
+
+<div class="gallery-container">
+    {% for file in videos %}
+    <div class="video-box">
+        <video src="/static/videos/{{ file }}" controls class="gallery-video"></video>
+        <p class="filename">{{ file }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<a href="/" class="back-btn">Back to Home</a>
+
+</body>
+</html>
