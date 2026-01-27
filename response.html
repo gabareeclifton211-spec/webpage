@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,24 +38,20 @@
     </style>
 </head>
 <body>
-    <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
 
-    <h1>Create an Account</h1>
+    <h1>Login</h1>
 
-    <form method="POST" action="/register">
+    <form method="POST">
         <label>Username:</label><br>
         <input type="text" name="username" required><br>
 
         <label>Password:</label><br>
         <input type="password" name="password" required><br>
 
-        <label>Confirm Password:</label><br>
-        <input type="password" name="confirm_password" required><br>
-
-        <input type="submit" value="Register">
+        <input type="submit" value="Login">
     </form>
 
-    <p>Already have an account? <a href="/login">Login here</a></p>
+    <p>Don't have an account? <a href="/register">Register here</a></p>
 
 </body>
 </html>

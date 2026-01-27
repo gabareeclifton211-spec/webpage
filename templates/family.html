@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Family Tree</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #004e92, #000428);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+        }
+        .tree-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+        .tree-list li {
+            background: rgba(0,0,0,0.15);
+            margin: 12px 0;
+            padding: 18px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .tree-list img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+        }
+        .add-btn {
+            display: inline-block;
+            margin: 24px 0 0 0;
+            padding: 12px 28px;
+            background: #ffd700;
+            color: #222;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .add-btn:hover {
+            background: #ffb300;
+        }
+        .bio {
+            font-size: 15px;
+            color: #ffe;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+    <div class="container">
+        <h1>Family Tree</h1>
+        <ul class="tree-list">
+            {% for member in family %}
+            <li>
+                <img src="{{ member.photo or url_for('static', filename='images/default_avatar.png') }}" alt="Photo">
+                <div style="flex:1;">
+                    <strong>{{ member.first_name }} {{ member.last_name }}</strong><br>
+                    <span>{{ member.birth_date }}{% if member.death_date %} - {{ member.death_date }}{% endif %}</span><br>
+                    <span class="bio">{{ member.bio }}</span>
+                    <div style="margin-top:8px; font-size:14px; color:#ffd700;">
+                        {% if member.parents %}
+                        Parents: {% for pid in member.parents %}
+                            {% set parent = family | selectattr('id', 'equalto', pid) | first %}
+                            {{ parent.first_name }} {{ parent.last_name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}<br>
+                        {% endif %}
+                        {% if member.children %}
+                        Children: {% for cid in member.children %}
+                            {% set child = family | selectattr('id', 'equalto', cid) | first %}
+                            {{ child.first_name }} {{ child.last_name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}<br>
+                        {% endif %}
+                        {% if member.spouse %}
+                        Spouse(s): {% for sid in member.spouse %}
+                            {% set spouse = family | selectattr('id', 'equalto', sid) | first %}
+                            {{ spouse.first_name }} {{ spouse.last_name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}<br>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="/edit_member/{{ member.id }}" style="margin-left:20px;">
+                    <button style="background:#ffd700; color:#222; border:none; border-radius:6px; padding:8px 18px; font-size:15px; cursor:pointer;">Edit</button>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="/add_member"><button class="add-btn">Add Family Member</button></a>
+    </div>
+</body>
+</html>

@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -15,8 +16,9 @@ else:
         with open("config.json", "r") as f:
             config = json.load(f)
             app.secret_key = config.get("SECRET_KEY", "supersecretkey")
-    except:
-        app.secret_key = "supersecretkey"   
+    except Exception as e:
+        print(f"Warning reading config.json for SECRET_KEY: {e}")
+        app.secret_key = "supersecretkey"
 
 # Upload folder
 UPLOAD_FOLDER = "uploads"
@@ -120,7 +122,8 @@ else:
         with open("config.json", "r") as f:
             config = json.load(f)
             MASTER_PASSWORD = config["MASTER_PASSWORD"]
-    except:
+    except Exception as e:
+        print(f"Warning reading config.json for MASTER_PASSWORD: {e}")
         MASTER_PASSWORD = "changeme"  # Fallback, should be set in production
 
 
@@ -239,7 +242,11 @@ def new_entry():
         title = request.form["title"]
         content = request.form["content"]
 
-        filename = title.lower().replace(" ", "_") + ".txt"
+        safe_title = secure_filename(title or "").lower()
+        if not safe_title:
+            return "Invalid title", 400
+
+        filename = f"{safe_title}.txt"
         filepath = os.path.join("text_entries", filename)
 
         if os.path.exists(filepath):
@@ -268,7 +275,11 @@ def replace_entry():
     filename = request.form["filename"]
     content = request.form["content"]
 
-    filepath = os.path.join("text_entries", filename)
+    safe_filename = secure_filename(filename or "")
+    if not safe_filename:
+        return "Invalid filename", 400
+
+    filepath = os.path.join("text_entries", safe_filename)
 
     os.makedirs("text_entries", exist_ok=True)
     with open(filepath, "w") as f:
@@ -283,15 +294,19 @@ def replace_entry():
 @app.route("/view/<entry_name>")
 @login_required
 def view_entry(entry_name):
-    filepath = os.path.join("text_entries", f"{entry_name}.txt")
+    safe_name = secure_filename(entry_name or "")
+    if not safe_name:
+        return "Entry not found.", 404
+
+    filepath = os.path.join("text_entries", f"{safe_name}.txt")
 
     if not os.path.exists(filepath):
-        return "Entry not found."
+        return "Entry not found.", 404
 
     with open(filepath, "r") as f:
         content = f.read()
 
-    return render_template("view_entry.html", title=entry_name, content=content)
+    return render_template("view_entry.html", title=safe_name, content=content)
 
 
 # -------------------------------
@@ -300,7 +315,11 @@ def view_entry(entry_name):
 @app.route("/edit/<entry_name>", methods=["GET", "POST"])
 @login_required
 def edit_entry(entry_name):
-    filepath = os.path.join("text_entries", f"{entry_name}.txt")
+    safe_name = secure_filename(entry_name or "")
+    if not safe_name:
+        return "Entry not found.", 404
+
+    filepath = os.path.join("text_entries", f"{safe_name}.txt")
 
     if request.method == "POST":
         new_content = request.form["content"]
@@ -311,7 +330,7 @@ def edit_entry(entry_name):
     with open(filepath, "r") as f:
         content = f.read()
 
-    return render_template("edit_entry.html", title=entry_name, content=content)
+    return render_template("edit_entry.html", title=safe_name, content=content)
 
 
 # -------------------------------
@@ -320,7 +339,11 @@ def edit_entry(entry_name):
 @app.route("/delete/<entry_name>")
 @login_required
 def delete_entry(entry_name):
-    filepath = os.path.join("text_entries", f"{entry_name}.txt")
+    safe_name = secure_filename(entry_name or "")
+    if not safe_name:
+        return redirect("/")
+
+    filepath = os.path.join("text_entries", f"{safe_name}.txt")
 
     if os.path.exists(filepath):
         os.remove(filepath)
@@ -454,7 +477,11 @@ def api_list_text_files():
 @login_required
 def api_load_text_file(filename):
     folder = "text_entries"
-    path = os.path.join(folder, f"{filename}.txt")
+    safe_name = secure_filename(filename or "")
+    if not safe_name:
+        return {"status": "error", "message": "File not found"}
+
+    path = os.path.join(folder, f"{safe_name}.txt")
 
     if not os.path.exists(path):
         return {"status": "error", "message": "File not found"}
@@ -462,7 +489,7 @@ def api_load_text_file(filename):
     with open(path, "r") as f:
         content = f.read()
 
-    return {"status": "ok", "filename": filename, "content": content}
+    return {"status": "ok", "filename": safe_name, "content": content}
 
 
 # -------------------------------
@@ -478,7 +505,9 @@ def api_new_text_file():
     if not filename:
         return {"status": "error", "message": "Filename required"}
 
-    safe_name = filename.lower().replace(" ", "_")
+    safe_name = secure_filename(filename).lower()
+    if not safe_name:
+        return {"status": "error", "message": "Invalid filename"}
     folder = "text_entries"
     os.makedirs(folder, exist_ok=True)
     path = os.path.join(folder, f"{safe_name}.txt")
@@ -507,7 +536,11 @@ def api_save_text_file():
 
     folder = "text_entries"
     os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, f"{filename}.txt")
+    safe_name = secure_filename(filename or "")
+    if not safe_name:
+        return {"status": "error", "message": "Invalid filename"}
+
+    path = os.path.join(folder, f"{safe_name}.txt")
 
     with open(path, "w") as f:
         f.write(content)
@@ -522,14 +555,18 @@ def api_save_text_file():
 @login_required
 def api_delete_text_file(filename):
     folder = "text_entries"
-    path = os.path.join(folder, f"{filename}.txt")
+    safe_name = secure_filename(filename or "")
+    if not safe_name:
+        return {"status": "error", "message": "File not found"}
+
+    path = os.path.join(folder, f"{safe_name}.txt")
 
     if not os.path.exists(path):
         return {"status": "error", "message": "File not found"}
 
     os.remove(path)
 
-    return {"status": "ok", "filename": filename}
+    return {"status": "ok", "filename": safe_name}
 
 
 # -------------------------------
@@ -542,8 +579,11 @@ def upload():
         file = request.files.get("file")
 
         if file:
-            filename = file.filename.strip().replace(" ", "_")
-            lower = filename.lower()
+            orig_name = file.filename or ""
+            safe_name = secure_filename(orig_name)
+            if not safe_name:
+                return "Invalid filename", 400
+            lower = safe_name.lower()
             name, ext = os.path.splitext(lower)
 
             if ext in [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"]:
@@ -779,6 +819,179 @@ def api_get_activity():
     log = load_activity_log()
     # Return latest 500 entries, reversed (newest first)
     return {"status": "ok", "activity": list(reversed(log[-500:]))}
+
+
+# -------------------------------
+# Family Tree Page
+# -------------------------------
+@app.route("/family")
+@login_required
+def family_tree():
+    family_file = os.path.join("family", "family.json")
+    family = []
+    if os.path.exists(family_file):
+        with open(family_file, "r") as f:
+            family = json.load(f)
+    return render_template("family.html", family=family)
+
+
+# -------------------------------
+# Add Family Member
+# -------------------------------
+@app.route("/add_member", methods=["GET", "POST"])
+@login_required
+def add_member():
+    family_file = os.path.join("family", "family.json")
+    if request.method == "POST":
+        # Load existing family
+        family = []
+        if os.path.exists(family_file):
+            with open(family_file, "r") as f:
+                family = json.load(f)
+        # Generate new ID
+        new_id = max([m["id"] for m in family], default=0) + 1
+        # Get form data
+
+        def resolve_to_ids(val, family):
+            if not val:
+                return []
+            result = []
+            for entry in val.split(","):
+                entry = entry.strip()
+                if entry.isdigit():
+                    result.append(int(entry))
+                else:
+                    # Try to match by name (first and last)
+                    for m in family:
+                        full_name = f"{m['first_name'].strip()} {m['last_name'].strip()}".lower()
+                        if entry.lower() == full_name:
+                            result.append(m['id'])
+                            break
+            return result
+
+        member = {
+            "id": new_id,
+            "first_name": request.form["first_name"],
+            "middle_name": request.form.get("middle_name", ""),
+            "last_name": request.form["last_name"],
+            "suffix": request.form.get("suffix", ""),
+            "birth_date": request.form["birth_date"],
+            "death_date": request.form.get("death_date") or None,
+            "gender": request.form["gender"],
+            "parents": resolve_to_ids(request.form.get("parents", ""), family),
+            "children": resolve_to_ids(request.form.get("children", ""), family),
+            "spouse": resolve_to_ids(request.form.get("spouse", ""), family),
+            "photo": None,
+            "bio": request.form.get("bio", "")
+        }
+
+        # Only use the member dict created above with resolve_to_ids
+        family.append(member)
+        with open(family_file, "w") as f:
+            json.dump(family, f, indent=4)
+        return redirect("/family")
+    return render_template("add_member.html")
+
+
+# -------------------------------
+# Edit Family Member
+# -------------------------------
+@app.route("/edit_member/<int:member_id>", methods=["GET", "POST"])
+@login_required
+def edit_member(member_id):
+    family_file = os.path.join("family", "family.json")
+    family = []
+    if os.path.exists(family_file):
+        with open(family_file, "r") as f:
+            family = json.load(f)
+    member = next((m for m in family if m["id"] == member_id), None)
+    if not member:
+        return "Member not found", 404
+    if request.method == "POST":
+
+        import re
+        def resolve_to_ids(val, family):
+            if not val:
+                return []
+            result = []
+            id_pattern = re.compile(r'\[(\d+)\]$')
+            for entry in val.split(","):
+                entry = entry.strip()
+                # Try to extract ID from 'Name [ID]' format
+                match = id_pattern.search(entry)
+                if match:
+                    result.append(int(match.group(1)))
+                elif entry.isdigit():
+                    result.append(int(entry))
+                else:
+                    for m in family:
+                        full_name = f"{m['first_name'].strip()} {m['last_name'].strip()}".lower()
+                        if entry.lower() == full_name:
+                            result.append(m['id'])
+                            break
+            return result
+
+        member["first_name"] = request.form["first_name"]
+        member["middle_name"] = request.form.get("middle_name", "")
+        member["last_name"] = request.form["last_name"]
+        member["suffix"] = request.form.get("suffix", "")
+        member["birth_date"] = request.form["birth_date"]
+        member["death_date"] = request.form.get("death_date") or None
+        member["gender"] = request.form["gender"]
+        member["parents"] = resolve_to_ids(request.form.get("parents", ""), family)
+        member["children"] = resolve_to_ids(request.form.get("children", ""), family)
+        member["spouse"] = resolve_to_ids(request.form.get("spouse", ""), family)
+        member["bio"] = request.form.get("bio", "")
+        with open(family_file, "w") as f:
+            json.dump(family, f, indent=4)
+        return redirect("/family")
+    return render_template("edit_member.html", member=member, family=family)
+
+
+# -------------------------------
+# Compute Relationships
+# -------------------------------
+def get_relationship(member1_id, member2_id, family):
+    id_to_member = {m['id']: m for m in family}
+    m1 = id_to_member.get(member1_id)
+    m2 = id_to_member.get(member2_id)
+    if not m1 or not m2:
+        return "No relationship found"
+    if member2_id in m1.get('parents', []):
+        return f"{m2['first_name']} is a parent of {m1['first_name']}"
+    if member1_id in m2.get('parents', []):
+        return f"{m1['first_name']} is a parent of {m2['first_name']}"
+    if set(m1.get('parents', [])) & set(m2.get('parents', [])):
+        return f"{m1['first_name']} and {m2['first_name']} are siblings"
+    m1_parents = [id_to_member.get(pid) for pid in m1.get('parents', [])]
+    m2_parents = [id_to_member.get(pid) for pid in m2.get('parents', [])]
+    for p1 in m1_parents:
+        for p2 in m2_parents:
+            if p1 and p2 and set(p1.get('parents', [])) & set(p2.get('parents', [])):
+                return f"{m1['first_name']} and {m2['first_name']} are cousins"
+    if member2_id in m1.get('spouse', []):
+        return f"{m1['first_name']} and {m2['first_name']} are spouses"
+    return "No direct relationship found"
+
+@app.route("/relationships")
+@login_required
+def relationships():
+    family_file = os.path.join("family", "family.json")
+    family = []
+    if os.path.exists(family_file):
+        with open(family_file, "r") as f:
+            family = json.load(f)
+    relationships = []
+    for i, m1 in enumerate(family):
+        for j, m2 in enumerate(family):
+            if i < j:
+                rel = get_relationship(m1['id'], m2['id'], family)
+                relationships.append({
+                    'member1': f"{m1['first_name']} {m1['last_name']}",
+                    'member2': f"{m2['first_name']} {m2['last_name']}",
+                    'relationship': rel
+                })
+    return render_template("relationships.html", relationships=relationships)
 
 
 # -------------------------------

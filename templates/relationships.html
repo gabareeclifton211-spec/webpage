@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Family Relationships</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #004e92, #000428);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #444;
+            text-align: left;
+            font-size: 17px;
+        }
+        th {
+            background: #003366;
+            color: #ffd700;
+        }
+        tr:nth-child(even) {
+            background: rgba(255,255,255,0.04);
+        }
+    </style>
+</head>
+<body>
+    <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+    <div class="container">
+        <h1>Family Relationships</h1>
+        <table>
+            <tr>
+                <th>Member 1</th>
+                <th>Member 2</th>
+                <th>Relationship</th>
+            </tr>
+            {% for rel in relationships %}
+            <tr>
+                <td>{{ rel.member1 }}</td>
+                <td>{{ rel.member2 }}</td>
+                <td>{{ rel.relationship }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

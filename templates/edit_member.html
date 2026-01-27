@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Family Member</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #004e92, #000428);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            font-size: 16px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 24px;
+            padding: 12px 28px;
+            background: #ffd700;
+            color: #222;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #ffb300;
+        }
+    </style>
+</head>
+    <body>
+        <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+    <div class="container">
+        <h1>Edit Family Member</h1>
+        <form method="post">
+            <label for="first_name">First Name</label>
+            <input type="text" id="first_name" name="first_name" value="{{ member.first_name }}" required>
+
+            <label for="middle_name">Middle Name</label>
+            <input type="text" id="middle_name" name="middle_name" value="{{ member.middle_name or '' }}">
+
+
+            <label for="last_name">Last Name</label>
+            <input type="text" id="last_name" name="last_name" value="{{ member.last_name }}" required>
+
+            <label for="suffix">Suffix (e.g., Jr., III)</label>
+            <input type="text" id="suffix" name="suffix" value="{{ member.suffix or '' }}" placeholder="e.g. Jr., III">
+
+            <label for="birth_date">Birth Date</label>
+            <input type="date" id="birth_date" name="birth_date" value="{{ member.birth_date }}" required>
+
+            <label for="death_date">Death Date</label>
+            <input type="date" id="death_date" name="death_date" value="{{ member.death_date or '' }}">
+
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+                <option value="male" {% if member.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if member.gender == 'female' %}selected{% endif %}>Female</option>
+                <option value="other" {% if member.gender == 'other' %}selected{% endif %}>Other</option>
+            </select>
+
+            <label for="bio">Biography / Notes</label>
+
+
+            <label for="parents">Parents (name [ID], comma-separated)</label>
+            <input type="text" id="parents" name="parents" value="{% for m in family if m.id in member.parents %}{{ m.first_name }} {{ m.last_name }} [{{ m.id }}]{% if not loop.last %}, {% endif %}{% endfor %}" list="family-list" placeholder="e.g. John Doe [1], Mary Doe [2]">
+
+            <label for="children">Children (name [ID], comma-separated)</label>
+            <input type="text" id="children" name="children" value="{% for m in family if m.id in member.children %}{{ m.first_name }} {{ m.last_name }} [{{ m.id }}]{% if not loop.last %}, {% endif %}{% endfor %}" list="family-list" placeholder="e.g. Jane Doe [3]">
+
+            <label for="spouse">Spouse(s) (name [ID], comma-separated)</label>
+            <input type="text" id="spouse" name="spouse" value="{% for m in family if m.id in member.spouse %}{{ m.first_name }} {{ m.last_name }} [{{ m.id }}]{% if not loop.last %}, {% endif %}{% endfor %}" list="family-list" placeholder="e.g. Mary Doe [2]">
+
+            <datalist id="family-list">
+            {% for m in family %}
+                <option value="{{ m.first_name }} {{ m.last_name }} [{{ m.id }}]">
+            {% endfor %}
+            </datalist>
+
+            <label for="bio">Biography / Notes</label>
+            <textarea id="bio" name="bio" rows="3">{{ member.bio }}</textarea>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

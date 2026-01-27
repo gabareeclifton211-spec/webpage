@@ -1,0 +1,104 @@
+[
+    {
+        "id": 1,
+        "first_name": "John",
+        "last_name": "Doe",
+        "birth_date": "1950-01-01",
+        "death_date": null,
+        "gender": "male",
+        "parents": [],
+        "children": [
+            2
+        ],
+        "spouse": [
+            3
+        ],
+        "photo": null,
+        "bio": "Patriarch of the Doe family.",
+        "middle_name": "Allen"
+    },
+    {
+        "id": 2,
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "birth_date": "1975-05-10",
+        "death_date": null,
+        "gender": "female",
+        "parents": [
+            1,
+            3
+        ],
+        "children": [],
+        "spouse": [],
+        "photo": null,
+        "bio": "Daughter of John and Mary Doe."
+    },
+    {
+        "id": 3,
+        "first_name": "Mary",
+        "last_name": "Doe",
+        "birth_date": "1952-03-15",
+        "death_date": null,
+        "gender": "female",
+        "parents": [],
+        "children": [
+            2
+        ],
+        "spouse": [
+            1
+        ],
+        "photo": null,
+        "bio": "Matriarch of the Doe family."
+    },
+    {
+        "id": 4,
+        "first_name": "Clifton ",
+        "last_name": "Gabaree",
+        "birth_date": "1975-07-01",
+        "death_date": null,
+        "gender": "male",
+        "parents": [
+            6
+        ],
+        "children": [],
+        "spouse": [
+            5
+        ],
+        "photo": null,
+        "bio": "",
+        "middle_name": "Arthur",
+        "suffix": "Jr."
+    },
+    {
+        "id": 5,
+        "first_name": "Tonia ",
+        "last_name": "Gabaree",
+        "birth_date": "1970-06-14",
+        "death_date": null,
+        "gender": "female",
+        "parents": [],
+        "children": [],
+        "spouse": [
+            4
+        ],
+        "photo": null,
+        "bio": ""
+    },
+    {
+        "id": 6,
+        "first_name": "Clifton ",
+        "last_name": "Gabaree",
+        "birth_date": "1939-07-07",
+        "death_date": null,
+        "gender": "male",
+        "parents": [],
+        "children": [
+            4
+        ],
+        "spouse": [],
+        "photo": null,
+        "bio": "",
+        "middle_name": "",
+        "suffix": ""
+    }
+]
