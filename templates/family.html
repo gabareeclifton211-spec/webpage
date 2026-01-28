@@ -78,6 +78,7 @@
         <ul class="tree-list">
             {% for member in family %}
             <li>
+<<<<<<< HEAD
                 <a href="{{ url_for('view_member', member_id=member.id) }}">
                 {% if member.photo_thumb_url %}
                     <img src="{{ member.photo_thumb_url }}" alt="Photo">
@@ -87,6 +88,11 @@
                 </a>
                 <div style="flex:1;">
                     <strong><a href="{{ url_for('view_member', member_id=member.id) }}" style="color:inherit; text-decoration:none;">{{ member.first_name }} {{ member.last_name }}</a></strong><br>
+=======
+                <img src="{{ member.photo or url_for('static', filename='images/default_avatar.png') }}" alt="Photo">
+                <div style="flex:1;">
+                    <strong>{{ member.first_name }} {{ member.last_name }}</strong><br>
+>>>>>>> origin/main
                     <span>{{ member.birth_date }}{% if member.death_date %} - {{ member.death_date }}{% endif %}</span><br>
                     <span class="bio">{{ member.bio }}</span>
                     <div style="margin-top:8px; font-size:14px; color:#ffd700;">

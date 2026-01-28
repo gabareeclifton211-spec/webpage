@@ -42,6 +42,7 @@
 
     <h1>Create an Account</h1>
 
+<<<<<<< HEAD
         {% if error %}
             <div style="color: red; margin-bottom: 12px;">{{ error }}</div>
         {% endif %}
@@ -58,6 +59,17 @@
 
         <label>Confirm Password:</label><br>
         <input id="confirm_password" type="password" name="confirm_password" required><br>
+=======
+    <form method="POST" action="/register">
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br>
+
+        <label>Confirm Password:</label><br>
+        <input type="password" name="confirm_password" required><br>
+>>>>>>> origin/main
 
         <input type="submit" value="Register">
     </form>

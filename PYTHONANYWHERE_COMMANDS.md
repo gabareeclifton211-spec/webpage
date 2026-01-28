@@ -96,6 +96,7 @@ Verify it was created:
 cat ~/mysite/config.json
 ```
 
+<<<<<<< HEAD
 ### Prefer a local-only secrets file (`config.local.json`)
 
 Instead of committing secrets to `config.json`, create a local-only `config.local.json` on PythonAnywhere and keep it out of your repo. Here's a safe pattern:
@@ -147,6 +148,8 @@ from app import app as application
 
 Remember to replace `/home/yourusername/mysite` with your PythonAnywhere path and reload the web app after editing the WSGI file.
 
+=======
+>>>>>>> origin/main
 ---
 
 ## STEP 6: Set Up Web App in PythonAnywhere

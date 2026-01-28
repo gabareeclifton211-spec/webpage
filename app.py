@@ -1,5 +1,6 @@
 import os
 import json
+<<<<<<< HEAD
 import html
 from datetime import datetime, timedelta
 import secrets
@@ -46,6 +47,27 @@ if not _secret:
     print("Warning: SECRET_KEY not set in environment or config.json; using development default (not for production).")
 
 app.secret_key = _secret
+=======
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+
+app = Flask(__name__)
+
+# Use environment variable for secret key, fallback to config for local development
+if 'SECRET_KEY' in os.environ:
+    app.secret_key = os.environ['SECRET_KEY']
+else:
+    # Try to load from config.json for local development
+    try:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            app.secret_key = config.get("SECRET_KEY", "supersecretkey")
+    except Exception as e:
+        print(f"Warning reading config.json for SECRET_KEY: {e}")
+        app.secret_key = "supersecretkey"
+>>>>>>> origin/main
 
 # Upload folder
 UPLOAD_FOLDER = "uploads"
@@ -101,6 +123,7 @@ def log_activity(action, username, details=""):
     save_activity_log(log)
 
 
+<<<<<<< HEAD
 # -------------------------------
 # Password reset token helpers
 # -------------------------------
@@ -188,6 +211,8 @@ def send_email(recipient, subject, body):
         return False, str(e)
 
 
+=======
+>>>>>>> origin/main
 # Helper: Storage statistics
 def get_storage_stats():
     stats = {
@@ -228,6 +253,7 @@ def get_storage_stats():
     return stats
 
 
+<<<<<<< HEAD
 # Load master password (prefer env var, then config.json). Treat empty values as missing.
 MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD')
 if not MASTER_PASSWORD:
@@ -251,6 +277,19 @@ if not MASTER_PASSWORD:
 if not MASTER_PASSWORD:
     MASTER_PASSWORD = "changeme"
     print("Warning: MASTER_PASSWORD not set in environment or config.json; using development fallback (change for production).")
+=======
+# Load master password
+if 'MASTER_PASSWORD' in os.environ:
+    MASTER_PASSWORD = os.environ['MASTER_PASSWORD']
+else:
+    try:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            MASTER_PASSWORD = config["MASTER_PASSWORD"]
+    except Exception as e:
+        print(f"Warning reading config.json for MASTER_PASSWORD: {e}")
+        MASTER_PASSWORD = "changeme"  # Fallback, should be set in production
+>>>>>>> origin/main
 
 
 # -------------------------------
@@ -274,6 +313,7 @@ def register():
         username = request.form["username"].strip()
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
+<<<<<<< HEAD
         email = request.form.get("email", "").strip()
 
         if password != confirm_password:
@@ -306,6 +346,24 @@ def register():
                 json.dump(user_data, f, indent=4)
         except Exception as e:
             return f"Failed to create user: {e}", 500
+=======
+
+        if password != confirm_password:
+            return "Passwords do not match."
+
+        user_file = os.path.join("users", f"{username}.json")
+        if os.path.exists(user_file):
+            return "Username already taken."
+
+        user_data = {
+            "username": username,
+            "password": generate_password_hash(password),
+            "is_admin": False
+        }
+
+        with open(user_file, "w") as f:
+            json.dump(user_data, f, indent=4)
+>>>>>>> origin/main
 
         return redirect("/login")
 
@@ -329,6 +387,7 @@ def login():
             return redirect("/")
 
         # NORMAL USER LOGIN
+<<<<<<< HEAD
         # sanitize the username to match stored filenames
         safe_username = secure_filename(username).lower()
         if not safe_username:
@@ -339,18 +398,33 @@ def login():
 
         if not os.path.exists(user_file):
             log_activity("LOGIN_FAILED", safe_username, "User does not exist")
+=======
+        user_file = os.path.join("users", f"{username}.json")
+
+        if not os.path.exists(user_file):
+            log_activity("LOGIN_FAILED", username, "User does not exist")
+>>>>>>> origin/main
             return "User does not exist"
 
         with open(user_file, "r") as f:
             user_data = json.load(f)
 
         if check_password_hash(user_data["password"], password):
+<<<<<<< HEAD
             session["username"] = safe_username
             session["is_admin"] = user_data.get("is_admin", False)
             log_activity("LOGIN", safe_username, f"Role: {'Admin' if user_data.get('is_admin') else 'User'}")
             return redirect("/")
 
         log_activity("LOGIN_FAILED", safe_username, "Incorrect password")
+=======
+            session["username"] = username
+            session["is_admin"] = user_data.get("is_admin", False)
+            log_activity("LOGIN", username, f"Role: {'Admin' if user_data.get('is_admin') else 'User'}")
+            return redirect("/")
+
+        log_activity("LOGIN_FAILED", username, "Incorrect password")
+>>>>>>> origin/main
         return "Incorrect password"
 
     return render_template("login.html")
@@ -381,6 +455,7 @@ def index():
 
 
 # -------------------------------
+<<<<<<< HEAD
 # Change Password (for logged-in users)
 # -------------------------------
 @app.route('/change_password', methods=["GET", "POST"])
@@ -560,6 +635,8 @@ def forgot_password_verify():
 
 
 # -------------------------------
+=======
+>>>>>>> origin/main
 # Create New Entry (legacy route, still usable if you want)
 # -------------------------------
 @app.route("/new", methods=["GET", "POST"])
@@ -961,8 +1038,12 @@ def admin_users():
                 data = json.load(f)
             users.append({
                 "username": filename.replace(".json", ""),
+<<<<<<< HEAD
                 "is_admin": data.get("is_admin", False),
                 "email": data.get("email", "")
+=======
+                "is_admin": data.get("is_admin", False)
+>>>>>>> origin/main
             })
 
     return render_template("admin_users.html", users=users)
@@ -973,11 +1054,16 @@ def admin_users():
 def toggle_admin(username):
     if not session.get("is_admin"):
         return "Access denied"
+<<<<<<< HEAD
     safe_username = secure_filename(username).lower()
     if not safe_username:
         return "User not found"
 
     filepath = os.path.join("users", f"{safe_username}.json")
+=======
+
+    filepath = os.path.join("users", f"{username}.json")
+>>>>>>> origin/main
     if not os.path.exists(filepath):
         return "User not found"
 
@@ -997,6 +1083,7 @@ def toggle_admin(username):
 def delete_user(username):
     if not session.get("is_admin"):
         return "Access denied"
+<<<<<<< HEAD
     safe_username = secure_filename(username).lower()
     if not safe_username:
         return "User not found"
@@ -1005,12 +1092,20 @@ def delete_user(username):
         return "Cannot delete sysop"
 
     filepath = os.path.join("users", f"{safe_username}.json")
+=======
+
+    if username == "sysop":
+        return "Cannot delete sysop"
+
+    filepath = os.path.join("users", f"{username}.json")
+>>>>>>> origin/main
     if os.path.exists(filepath):
         os.remove(filepath)
 
     return redirect("/admin/users")
 
 
+<<<<<<< HEAD
 @app.route('/admin/user/<username>', methods=['GET', 'POST'])
 @login_required
 def admin_edit_user(username):
@@ -1083,6 +1178,8 @@ def admin_edit_user(username):
     return render_template('admin_edit_user.html', username=safe_username, user=user_data)
 
 
+=======
+>>>>>>> origin/main
 # -------------------------------
 # ADMIN: Upload Management
 # -------------------------------
@@ -1126,12 +1223,17 @@ def api_reassign_upload():
     if not filename or not new_user:
         return {"status": "error", "message": "Missing parameters"}
     
+<<<<<<< HEAD
     # Check if user exists (sanitize username)
     safe_new_user = secure_filename(new_user or "").lower()
     if not safe_new_user:
         return {"status": "error", "message": "User does not exist"}
 
     user_file = os.path.join("users", f"{safe_new_user}.json")
+=======
+    # Check if user exists
+    user_file = os.path.join("users", f"{new_user}.json")
+>>>>>>> origin/main
     if not os.path.exists(user_file):
         return {"status": "error", "message": "User does not exist"}
     
@@ -1141,10 +1243,17 @@ def api_reassign_upload():
     for item in metadata:
         if item["filename"] == filename:
             old_user = item.get("assigned_to")
+<<<<<<< HEAD
             item["assigned_to"] = safe_new_user
             save_upload_metadata(metadata)
             log_activity("FILE_REASSIGN", session.get("username"), f"File: {filename} from {old_user} to {safe_new_user}")
             return {"status": "ok", "message": f"File assigned to {safe_new_user}"}
+=======
+            item["assigned_to"] = new_user
+            save_upload_metadata(metadata)
+            log_activity("FILE_REASSIGN", session.get("username"), f"File: {filename} from {old_user} to {new_user}")
+            return {"status": "ok", "message": f"File assigned to {new_user}"}
+>>>>>>> origin/main
     
     return {"status": "error", "message": "File not found"}
 
@@ -1242,6 +1351,7 @@ def family_tree():
     if os.path.exists(family_file):
         with open(family_file, "r") as f:
             family = json.load(f)
+<<<<<<< HEAD
     # Augment members with photo URLs (thumbnail for lists)
     image_folder = os.path.join('static', 'images')
     for m in family:
@@ -1311,6 +1421,11 @@ def view_member(member_id):
     return render_template('view_member.html', member=member, parents=parents, children=children, spouses=spouses)
 
 
+=======
+    return render_template("family.html", family=family)
+
+
+>>>>>>> origin/main
 # -------------------------------
 # Add Family Member
 # -------------------------------
@@ -1345,6 +1460,7 @@ def add_member():
                             break
             return result
 
+<<<<<<< HEAD
         # Handle photo upload
         photo_file = request.files.get('photo')
         photo_name = None
@@ -1368,6 +1484,8 @@ def add_member():
                 except Exception:
                     pass
 
+=======
+>>>>>>> origin/main
         member = {
             "id": new_id,
             "first_name": request.form["first_name"],
@@ -1380,7 +1498,11 @@ def add_member():
             "parents": resolve_to_ids(request.form.get("parents", ""), family),
             "children": resolve_to_ids(request.form.get("children", ""), family),
             "spouse": resolve_to_ids(request.form.get("spouse", ""), family),
+<<<<<<< HEAD
             "photo": photo_name,
+=======
+            "photo": None,
+>>>>>>> origin/main
             "bio": request.form.get("bio", "")
         }
 
@@ -1441,6 +1563,7 @@ def edit_member(member_id):
         member["children"] = resolve_to_ids(request.form.get("children", ""), family)
         member["spouse"] = resolve_to_ids(request.form.get("spouse", ""), family)
         member["bio"] = request.form.get("bio", "")
+<<<<<<< HEAD
 
         # Handle uploaded photo (optional)
         photo_file = request.files.get('photo')
@@ -1475,6 +1598,8 @@ def edit_member(member_id):
                         os.remove(old_thumb)
                 except Exception:
                     pass
+=======
+>>>>>>> origin/main
         with open(family_file, "w") as f:
             json.dump(family, f, indent=4)
         return redirect("/family")
@@ -1528,6 +1653,7 @@ def relationships():
 
 
 # -------------------------------
+<<<<<<< HEAD
 # Debug: expose the on-disk index.html source for comparison
 # -------------------------------
 @app.route('/_debug_index_source')
@@ -1564,6 +1690,8 @@ def _debug_routes():
 
 
 # -------------------------------
+=======
+>>>>>>> origin/main
 # Run App
 # -------------------------------
 if __name__ == "__main__":

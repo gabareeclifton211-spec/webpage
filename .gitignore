@@ -55,7 +55,10 @@ uploads/**
 
 # Config files with sensitive data
 config.json
+<<<<<<< HEAD
 config.local.json
+=======
+>>>>>>> origin/main
 activity_log.json
 uploads_metadata.json
 

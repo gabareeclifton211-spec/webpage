@@ -1,6 +1,7 @@
 [
     {
         "id": 1,
+<<<<<<< HEAD
         "first_name": "Elizabeth",
         "last_name": "Young",
         "birth_date": "1997-09-29",
@@ -13,12 +14,22 @@
         "children": [
             7,
             8,
+=======
+        "first_name": "John",
+        "last_name": "Doe",
+        "birth_date": "1950-01-01",
+        "death_date": null,
+        "gender": "male",
+        "parents": [],
+        "children": [
+>>>>>>> origin/main
             2
         ],
         "spouse": [
             3
         ],
         "photo": null,
+<<<<<<< HEAD
         "bio": "",
         "middle_name": "Marie",
         "suffix": ""
@@ -28,6 +39,16 @@
         "first_name": "Raelynn",
         "last_name": "Cyr",
         "birth_date": "2022-01-26",
+=======
+        "bio": "Patriarch of the Doe family.",
+        "middle_name": "Allen"
+    },
+    {
+        "id": 2,
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "birth_date": "1975-05-10",
+>>>>>>> origin/main
         "death_date": null,
         "gender": "female",
         "parents": [
@@ -37,6 +58,7 @@
         "children": [],
         "spouse": [],
         "photo": null,
+<<<<<<< HEAD
         "bio": "Daughter of Elizabeth Young and Steven Cyr.",
         "middle_name": "",
         "suffix": ""
@@ -48,6 +70,17 @@
         "birth_date": "1900-01-01",
         "death_date": null,
         "gender": "male",
+=======
+        "bio": "Daughter of John and Mary Doe."
+    },
+    {
+        "id": 3,
+        "first_name": "Mary",
+        "last_name": "Doe",
+        "birth_date": "1952-03-15",
+        "death_date": null,
+        "gender": "female",
+>>>>>>> origin/main
         "parents": [],
         "children": [
             2
@@ -56,9 +89,13 @@
             1
         ],
         "photo": null,
+<<<<<<< HEAD
         "bio": "",
         "middle_name": "",
         "suffix": ""
+=======
+        "bio": "Matriarch of the Doe family."
+>>>>>>> origin/main
     },
     {
         "id": 4,
@@ -68,6 +105,7 @@
         "death_date": null,
         "gender": "male",
         "parents": [
+<<<<<<< HEAD
             6,
             11
         ],
@@ -78,6 +116,15 @@
             5
         ],
         "photo": "member_4_fca70b2f6532_img_20221130_054232_01.jpg",
+=======
+            6
+        ],
+        "children": [],
+        "spouse": [
+            5
+        ],
+        "photo": null,
+>>>>>>> origin/main
         "bio": "",
         "middle_name": "Arthur",
         "suffix": "Jr."
@@ -94,10 +141,15 @@
         "spouse": [
             4
         ],
+<<<<<<< HEAD
         "photo": "member_5_0cf6fe1a9ac9_pxl_20230713_184623617.jpg",
         "bio": "",
         "middle_name": "",
         "suffix": ""
+=======
+        "photo": null,
+        "bio": ""
+>>>>>>> origin/main
     },
     {
         "id": 6,
@@ -115,6 +167,7 @@
         "bio": "",
         "middle_name": "",
         "suffix": ""
+<<<<<<< HEAD
     },
     {
         "id": 7,
@@ -250,5 +303,7 @@
         "spouse": [],
         "photo": null,
         "bio": ""
+=======
+>>>>>>> origin/main
     }
 ]

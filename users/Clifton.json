@@ -1,6 +1,11 @@
 {
     "username": "Clifton",
+<<<<<<< HEAD
     "password": "pbkdf2:sha256:600000$hETxDpxBp6xKJF5m$2d239820a353709e9f0ef84ac230f5db2b7d33ac1629fb2ef462254d895c6e08",
     "is_admin": false,
     "email": "gabareeclifton211@gmail.com"
+=======
+    "password": "scrypt:32768:8:1$fqRtrGcD0ShHLRNK$22511975fa38f4469e00ae122136bd8174e37d49a46c3941df2cb0e68f65b5cc1ef043adc48a89e8275874fc3a739a66d3601fffc8bc5d0c37ce498ca5a83538",
+    "is_admin": false
+>>>>>>> origin/main
 }
