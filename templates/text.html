@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Manager</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            color: white;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(6px);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar h2 {
+            margin-top: 0;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .file-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .file-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main editor area */
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #filename-display {
+            font-size: 22px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        #editor {
+            flex: 1;
+            width: 100%;
+            resize: none;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            line-height: 1.5;
+        }
+
+        /* Floating toolbar */
+        #toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .tool-btn {
+            padding: 12px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            transition: 0.2s;
+        }
+
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+        <body>
+            <a href="/" style="position:fixed;top:18px;right:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <h2>Text Files</h2>
+        <div id="file-list"></div>
+    </div>
+
+    <!-- Main editor area -->
+    <div id="main">
+        <div id="filename-display">No file selected</div>
+        <textarea id="editor" placeholder="Select or create a file..." disabled></textarea>
+    </div>
+
+    <!-- Floating toolbar -->
+    <div id="toolbar">
+    <button id="btn-new" class="tool-btn">New</button>
+    <button id="btn-edit" class="tool-btn hidden">Edit</button>
+    <button id="btn-save" class="tool-btn hidden">Save</button>
+    <button id="btn-delete" class="tool-btn hidden">Delete</button>
+    <button id="btn-cancel" class="tool-btn hidden">Cancel</button>
+</div>
+
+
+    <!-- JavaScript will be added in the next section -->
+    <script src="/static/text_manager.js"></script>
+
+</body>
+</html>

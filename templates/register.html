@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        form {
+            max-width: 300px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #333;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+
+    <h1>Create an Account</h1>
+
+        {% if error %}
+            <div style="color: red; margin-bottom: 12px;">{{ error }}</div>
+        {% endif %}
+
+    <form id="registerForm" method="POST" action="/register">
+        <label>Username:</label><br>
+        <input id="username" type="text" name="username" required value="{{ username or '' }}"><br>
+
+        <label>Password:</label><br>
+        <input id="password" type="password" name="password" required><br>
+
+        <label>Email (optional):</label><br>
+        <input id="email" type="text" name="email" placeholder="you@example.com" value="{{ email or '' }}"><br>
+
+        <label>Confirm Password:</label><br>
+        <input id="confirm_password" type="password" name="confirm_password" required><br>
+
+        <input type="submit" value="Register">
+    </form>
+
+    <p>Already have an account? <a href="/login">Login here</a></p>
+
+</body>
+</html>

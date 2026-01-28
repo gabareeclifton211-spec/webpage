@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ member.first_name }} {{ member.last_name }}{% endblock %}
+
+{% block content %}
+  <div style="max-width:760px;margin:24px auto;background:rgba(255,255,255,0.04);padding:20px;border-radius:10px;color:#fff;">
+    <div style="display:flex;gap:20px;align-items:flex-start;">
+      <div style="flex:0 0 220px;">
+        {% if member.photo_url %}
+          <img src="{{ member.photo_url }}" style="width:220px;height:220px;object-fit:cover;border-radius:8px;border:3px solid #ffd700;" alt="{{ member.first_name }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default_avatar.svg') }}" style="width:220px;height:220px;object-fit:cover;border-radius:8px;border:3px solid #ffd700;" alt="{{ member.first_name }}">
+        {% endif %}
+        <div style="margin-top:12px;">
+                <a href="{{ url_for('edit_member', member_id=member.id) }}"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 12px;cursor:pointer;">Edit</button></a>
+        </div>
+      </div>
+
+      <div style="flex:1;">
+        <h2 style="margin:0 0 8px 0;">{{ member.first_name }} {{ member.middle_name or '' }} {{ member.last_name }} {{ member.suffix or '' }}</h2>
+        <div style="color:#ffe;">Born: {{ member.birth_date }}{% if member.death_date %} — Died: {{ member.death_date }}{% endif %}</div>
+        <p style="margin-top:12px;color:#fff;">{{ member.bio }}</p>
+
+        <div style="margin-top:18px;">
+          {% if parents %}
+            <div style="margin-bottom:8px;"><strong>Parents</strong></div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              {% for p in parents if p %}
+                <a href="{{ url_for('view_member', member_id=p.id) }}" style="text-decoration:none;color:inherit;">
+                  {% if p.photo_thumb_url %}
+                    <img src="{{ p.photo_thumb_url }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ p.first_name }}">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='images/default_avatar.svg') }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ p.first_name }}">
+                  {% endif %}
+                  <div style="text-align:center;font-size:13px;margin-top:4px;">{{ p.first_name }} {{ p.last_name }}</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if children %}
+            <div style="margin-top:14px;margin-bottom:8px;"><strong>Children</strong></div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              {% for c in children if c %}
+                <a href="{{ url_for('view_member', member_id=c.id) }}" style="text-decoration:none;color:inherit;">
+                  {% if c.photo_thumb_url %}
+                    <img src="{{ c.photo_thumb_url }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ c.first_name }}">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='images/default_avatar.svg') }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ c.first_name }}">
+                  {% endif %}
+                  <div style="text-align:center;font-size:13px;margin-top:4px;">{{ c.first_name }} {{ c.last_name }}</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if spouses %}
+            <div style="margin-top:14px;margin-bottom:8px;"><strong>Spouse(s)</strong></div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              {% for s in spouses if s %}
+                <a href="{{ url_for('view_member', member_id=s.id) }}" style="text-decoration:none;color:inherit;">
+                  {% if s.photo_thumb_url %}
+                    <img src="{{ s.photo_thumb_url }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ s.first_name }}">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='images/default_avatar.svg') }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ s.first_name }}">
+                  {% endif %}
+                  <div style="text-align:center;font-size:13px;margin-top:4px;">{{ s.first_name }} {{ s.last_name }}</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+    <style>
+        body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #004e92, #000428);
+    background-repeat: no-repeat;   
+    background-attachment: fixed;  
+    color: white;
+    text-align: center;
+}
+
+
+        h1 {
+            margin-top: 80px;
+            font-size: 40px;
+            letter-spacing: 1px;
+        }
+
+        /* Centered navigation bar */
+        .nav {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav a {
+            display: inline-block;
+            padding: 14px 24px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+            font-size: 14px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+
+            
+        }
+
+        /* Hover animation */
+       .nav a:hover {
+           background: linear-gradient(to bottom, #0066ff, #003399);
+           transform: scale(1.05);
+}
+
+
+
+        /* Logout button */
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 8px 14px;
+            background-color: #444;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background-color: #333;
+        }
+
+        /* Clock bottom-right */
+        #clock {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 13px;
+            color: red;
+            font-weight: bold;
+        }
+
+                /* Mobile nav toggle */
+                .nav-toggle{display:none}
+                @media (max-width:720px){
+                    .nav{display:none}
+                    body.nav-open .nav{display:flex;flex-direction:column;gap:6px;padding:12px}
+                    .nav-toggle{display:block;position:absolute;top:10px;right:10px;background:none;border:0;color:white;font-size:26px}
+                }
+    </style>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const date = now.toLocaleDateString();
+            const time = now.toLocaleTimeString();
+            document.getElementById("clock").innerHTML = date + " " + time;
+        }
+        setInterval(updateClock, 1000);
+        window.onload = updateClock;
+    </script>
+</head>
+
+<body>
+    <!-- NAV_FROM_INDEX -->
+    <button id="nav-toggle" class="nav-toggle" onclick="document.body.classList.toggle('nav-open')">☰</button>
+{% if session.get("is_admin") %}
+    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+        <a href="/admin/dashboard" 
+           style="font-size: 14px; 
+                  color: black; 
+                  background: #00ff00; 
+                  padding: 10px 20px; 
+                  display: inline-block; 
+                  border-radius: 6px;
+                  text-decoration: none;">
+            Dashboard
+        </a>
+        <a href="/admin/users" 
+           style="font-size: 14px; 
+                  color: black; 
+                  background: yellow; 
+                  padding: 10px 20px; 
+                  display: inline-block; 
+                  border-radius: 6px;
+                  text-decoration: none;">
+            User Management
+        </a>
+        <a href="/admin/uploads" 
+           style="font-size: 14px; 
+                  color: black; 
+                  background: #ffcc00; 
+                  padding: 10px 20px; 
+                  display: inline-block; 
+                  border-radius: 6px;
+                  text-decoration: none;">
+            Upload Management
+        </a>
+    </div>
+{% endif %}
+
+{% if session.get("username") %}
+    <div style="padding: 10px; background: rgba(255,255,255,0.7); 
+                border-radius: 8px; margin-bottom: 20px; 
+                max-width: 300px; font-size: 16px;">
+        Logged in as: <strong>{{ session.get("username") }}</strong><br>
+        Role:
+        {% if session.get("is_admin") %}
+            <span style="color: green; font-weight: bold;">Admin</span>
+        {% else %}
+            <span style="color: blue;">User</span>
+        {% endif %}
+    </div>
+
+    <!-- Warning Message -->
+    <div style="padding: 15px; background: rgba(255, 200, 0, 0.2); 
+                border: 2px solid #ffcc00; 
+                border-radius: 8px; margin-bottom: 20px; 
+                max-width: 400px; font-size: 14px;
+                color: #ffeb3b;">
+        ⚠️ <strong>Warning:</strong> All uploaded files can be viewed by every authenticated user on this system. Do not upload sensitive or personal information.
+    </div>
+{% endif %}
+
+
+    <a href="/logout" class="logout-btn">Logout</a>
+
+
+    <h1 style="font-size:48px; margin-top:60px; letter-spacing:2px;">Welcome to the Family Tree</h1>
+
+    <div id="nav-menu" class="nav" style="margin-top:40px;">
+        <a href="/family">Family Tree</a>
+        <a href="/relationships">Family Relationships</a>
+        <a href="/media">Media Gallery</a>
+        <a href="/text">Text Entries</a>
+    </div>
+
+    <div style="max-width:600px; margin:40px auto 0 auto; background:rgba(255,255,255,0.1); border-radius:12px; padding:32px 24px; box-shadow:0 4px 24px rgba(0,0,0,0.2);">
+        <h2 style="color:#ffd700; margin-bottom:16px;">Build Your Family Legacy</h2>
+        <p style="font-size:18px; color:#fff;">This site is your private family tree. Add family members, connect relationships, share stories, and preserve your history for future generations. Only trusted family can log in and contribute.</p>
+        <ul style="text-align:left; color:#fff; font-size:16px; margin-top:24px;">
+            <li>🌳 <b>View & Explore</b> your family tree</li>
+            <li>➕ <b>Add new members</b> and relationships</li>
+            <li>🖼️ <b>Upload photos</b> and stories</li>
+            <li>🔍 <b>Search</b> for relatives</li>
+        </ul>
+    </div>
+
+    <div id="clock"></div>
+
+<script>
+// Ensure a mobile nav toggle exists and attach behaviors
+(function(){
+    try{
+        var toggle = document.getElementById('nav-toggle');
+        var menu = document.getElementById('nav-menu') || document.querySelector('.nav') || document.querySelector('nav');
+        if(!menu) return;
+        if(!toggle){
+            toggle = document.createElement('button');
+            toggle.id = 'nav-toggle';
+            toggle.className = 'nav-toggle';
+            toggle.innerText = '☰';
+            toggle.style.cssText = 'display:block;position:absolute;top:10px;right:10px;background:none;border:0;color:white;font-size:26px';
+            document.body.insertBefore(toggle, document.body.firstChild);
+        }
+        var setAria = function(v){ try{ toggle.setAttribute('aria-expanded', String(v)); }catch(e){} };
+        toggle.addEventListener('click', function(){
+            menu.classList.toggle('open');
+            document.body.classList.toggle('nav-open');
+            setAria(menu.classList.contains('open') || document.body.classList.contains('nav-open'));
+        });
+        document.addEventListener('click', function(e){
+            if(!menu.contains(e.target) && !toggle.contains(e.target)){
+                menu.classList.remove('open');
+                document.body.classList.remove('nav-open');
+                setAria(false);
+            }
+        });
+        document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); } });
+        Array.from(menu.querySelectorAll('a')).forEach(function(a){ a.addEventListener('click', function(){ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); }); });
+    }catch(err){ console.warn('index nav init error', err); }
+})();
+</script>
+</body>
+</html>

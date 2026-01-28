@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Webpage{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topnav">
+    <!-- NAV_FROM_BASE -->
+    <div class="brand"><a href="/">Family Web</a></div>
+    <nav id="nav-menu" class="navlinks">
+      <a href="/">Home</a>
+      <a href="/text">Text</a>
+      <a href="/images">Images</a>
+      <a href="/videos">Videos</a>
+      <a href="/upload">Upload</a>
+      {% if session.get('username') %}
+        <span class="spacer"></span>
+        <span class="user">{{ session.get('username') }}</span>
+        <a href="/logout">Logout</a>
+      {% else %}
+        <span class="spacer"></span>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </nav>
+    <button id="nav-toggle" class="nav-toggle" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </header>
+
+  <main class="container">
+    <div id="flash-area">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/forms.js"></script>
+  <script src="/static/nav.js"></script>
+  <script>
+    /* Inline fallback for mobile nav if /static/nav.js didn't load */
+    (function(){
+      try{
+        const toggle = document.getElementById('nav-toggle') || document.querySelector('.nav-toggle');
+        const menu = document.getElementById('nav-menu') || document.querySelector('.navlinks') || document.querySelector('nav');
+        if(!toggle || !menu) return;
+        const setAria = (v)=>{ try{ toggle.setAttribute('aria-expanded', String(v)); }catch(e){} };
+        toggle.addEventListener('click', ()=>{
+          menu.classList.toggle('open');
+          document.body.classList.toggle('nav-open');
+          setAria(menu.classList.contains('open') || document.body.classList.contains('nav-open'));
+        });
+        document.addEventListener('click', (e)=>{
+          if(!menu.contains(e.target) && !toggle.contains(e.target)){
+            menu.classList.remove('open');
+            document.body.classList.remove('nav-open');
+            setAria(false);
+          }
+        });
+        document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); } });
+        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', ()=>{ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); }));
+      }catch(err){ console.warn('nav fallback error', err); }
+    })();
+  </script>
+</body>
+</html>

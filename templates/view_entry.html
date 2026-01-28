@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<pre style="white-space:pre-wrap">{{ content }}</pre>
+<p><a href="/edit/{{ title }}">Edit</a> | <a href="/delete/{{ title }}">Delete</a> | <a href="/text">Back</a></p>
+{% endblock %}

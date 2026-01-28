@@ -1,0 +1,26 @@
+@app.route("/new", methods=["GET", "POST"])
+@login_required
+def new_entry():
+    if request.method == "POST":
+        title = request.form["title"]
+        content = request.form["content"]
+
+        filename = title.lower().replace(" ", "_") + ".txt"
+        filepath = os.path.join("text_entries", filename)
+
+        # If file exists, ask user if they want to replace it
+        if os.path.exists(filepath):
+            return render_template(
+                "confirm_replace.html",
+                title=title,
+                content=content,
+                filename=filename
+            )
+
+        # Save new file
+        with open(filepath, "w") as f:
+            f.write(content)
+
+        return redirect("/text")
+
+    return render_template("new_entry.html")

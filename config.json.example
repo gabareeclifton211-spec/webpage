@@ -1,0 +1,4 @@
+{
+    "MASTER_PASSWORD": "<set_this_in_pythonanywhere_env>",
+    "SECRET_KEY": "<set_this_in_pythonanywhere_env>"
+}

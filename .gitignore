@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment
+.env
+.env.local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Keep these folders (they contain app data)
+!users/
+!text_entries/
+!uploads/
+!static/
+
+# But ignore files inside uploads
+uploads/**
+!uploads/.gitkeep
+
+# Config files with sensitive data
+config.json
+config.local.json
+activity_log.json
+uploads_metadata.json
+
+# Database files (if using SQLite in future)
+*.db
+*.sqlite

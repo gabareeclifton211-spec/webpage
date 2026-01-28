@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Upload Management</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #004e92, #000428);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .header-nav {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .back-btn:hover {
+            background: #555;
+        }
+
+        .upload-card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .upload-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filename {
+            font-weight: bold;
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .metadata {
+            font-size: 12px;
+            color: #aaa;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .metadata-item {
+            display: flex;
+            gap: 5px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: #0066ff;
+        }
+
+        .type-badge {
+            display: inline-block;
+            background: rgba(0,102,255,0.7);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .assign-select {
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            font-size: 12px;
+            min-width: 120px;
+        }
+
+        .assign-select option {
+            background: #333;
+            color: white;
+        }
+
+        .btn-assign {
+            padding: 6px 12px;
+            background: rgba(0,150,0,0.6);
+            color: white;
+            border: 1px solid rgba(0,200,0,0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-assign:hover {
+            background: rgba(0,200,0,0.8);
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: rgba(255,50,50,0.6);
+            color: white;
+            border: 1px solid rgba(255,100,100,0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255,80,80,0.8);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #aaa;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        .status-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(0,200,0,0.3);
+            border: 1px solid rgba(0,200,0,0.5);
+            color: #7fff7f;
+            display: block;
+        }
+
+        .status-message.error {
+            background: rgba(255,50,50,0.3);
+            border: 1px solid rgba(255,100,100,0.5);
+            color: #ff7f7f;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .upload-card {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+
+<div class="container">
+    <h1>Upload Management</h1>
+    <div class="header-nav">
+        <a href="/admin/users" class="back-btn">← Back to Users</a>
+        <a href="/" class="back-btn">Home</a>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <div id="uploadsContainer">
+        <!-- Uploads will be loaded here by JavaScript -->
+    </div>
+</div>
+
+<script>
+    let allUploads = [];
+    let allUsers = JSON.parse('{{ users | tojson }}');
+
+    // Load uploads on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUploads();
+    });
+
+    function loadUploads() {
+        fetch('/admin/uploads/api/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    allUploads = data.uploads;
+                    renderUploads();
+                }
+            })
+            .catch(err => {
+                showStatus('Error loading uploads: ' + err.message, 'error');
+            });
+    }
+
+    function renderUploads() {
+        const container = document.getElementById('uploadsContainer');
+        container.innerHTML = '';
+
+        if (allUploads.length === 0) {
+            container.innerHTML = '<div class="empty-message">No uploads found</div>';
+            return;
+        }
+
+        allUploads.forEach((upload, index) => {
+            const card = document.createElement('div');
+            card.className = 'upload-card';
+
+            const uploadInfo = document.createElement('div');
+            uploadInfo.className = 'upload-info';
+
+            const filename = document.createElement('div');
+            filename.className = 'filename';
+            filename.textContent = upload.filename;
+
+            const metadata = document.createElement('div');
+            metadata.className = 'metadata';
+
+            const typeSpan = document.createElement('span');
+            typeSpan.className = 'type-badge';
+            typeSpan.textContent = upload.type;
+
+            const uploaderSpan = document.createElement('span');
+            uploaderSpan.className = 'metadata-item';
+            uploaderSpan.innerHTML = `<span class="metadata-label">Uploader:</span> ${upload.uploader}`;
+
+            const assignedSpan = document.createElement('span');
+            assignedSpan.className = 'metadata-item';
+            assignedSpan.innerHTML = `<span class="metadata-label">Assigned To:</span> ${upload.assigned_to}`;
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'metadata-item';
+            dateSpan.innerHTML = `<span class="metadata-label">Date:</span> ${upload.upload_date}`;
+
+            metadata.appendChild(typeSpan);
+            metadata.appendChild(uploaderSpan);
+            metadata.appendChild(assignedSpan);
+            metadata.appendChild(dateSpan);
+
+            uploadInfo.appendChild(filename);
+            uploadInfo.appendChild(metadata);
+
+            // Reassign controls
+            const assignSelect = document.createElement('select');
+            assignSelect.className = 'assign-select';
+            assignSelect.id = `select-${index}`;
+
+            allUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                if (user === upload.assigned_to) {
+                    option.selected = true;
+                }
+                assignSelect.appendChild(option);
+            });
+
+            const assignBtn = document.createElement('button');
+            assignBtn.className = 'btn-assign';
+            assignBtn.textContent = 'Assign';
+            assignBtn.onclick = () => reassignUpload(upload.filename, assignSelect.value);
+
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-delete';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = () => {
+                if (confirm('Are you sure you want to delete this upload?')) {
+                    deleteUpload(upload.filename);
+                }
+            };
+
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+            actions.appendChild(assignSelect);
+            actions.appendChild(assignBtn);
+            actions.appendChild(deleteBtn);
+
+            card.appendChild(uploadInfo);
+            card.appendChild(actions);
+
+            container.appendChild(card);
+        });
+    }
+
+    function reassignUpload(filename, newUser) {
+        fetch('/admin/uploads/api/reassign', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: filename,
+                assigned_to: newUser
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                showStatus('File assigned to ' + newUser, 'success');
+                loadUploads();
+            } else {
+                showStatus('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(err => {
+            showStatus('Error: ' + err.message, 'error');
+        });
+    }
+
+    function deleteUpload(filename) {
+        fetch('/admin/uploads/api/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: filename
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                showStatus('File deleted successfully', 'success');
+                loadUploads();
+            } else {
+                showStatus('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(err => {
+            showStatus('Error: ' + err.message, 'error');
+        });
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('statusMessage');
+        statusDiv.textContent = message;
+        statusDiv.className = 'status-message ' + type;
+        setTimeout(() => {
+            statusDiv.className = 'status-message';
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

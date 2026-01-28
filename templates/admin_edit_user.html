@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - {{ username }}{% endblock %}
+
+{% block content %}
+  <h2>Edit User: {{ username }}</h2>
+  {% if error %}
+    <div class="flash error">{{ error }}</div>
+  {% endif %}
+  <form id="adminEditForm" method="post" class="form">
+    {% for key, val in user.items() %}
+      {% if key == 'password' or key == 'username' %}
+        {# skip showing password and username (username shown in header) #}
+      {% elif val is sameas true or val is sameas false %}
+        <label>
+          <input type="checkbox" name="{{ key }}" {% if val %}checked{% endif %}> {{ key.replace('_',' ').title() }}
+        </label>
+      {% elif val is string %}
+        <label>{{ key.replace('_',' ').title() }}
+          <input type="text" name="{{ key }}" value="{{ val }}">
+        </label>
+      {% else %}
+        <label>{{ key.replace('_',' ').title() }} (JSON)
+          <textarea name="{{ key }}" rows="4">{{ val | tojson }}</textarea>
+        </label>
+      {% endif %}
+    {% endfor %}
+
+    <label>Set New Password (leave blank to keep current)
+      <input type="password" name="new_password">
+    </label>
+    <div class="form-actions">
+      <button type="submit">Save</button>
+      <a href="/admin/users">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Files</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        form {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 400px;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        input[type="submit"]:hover {
+            background-color: #333;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+    <body>
+        <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
+
+    <!-- Logout Button -->
+    <a href="/logout" style="
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 8px 14px;
+        background-color: #444;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 14px;
+    ">Logout</a>
+
+    <h1>Upload Files</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label>Select a file to upload:</label><br>
+        <input type="file" name="file" required>
+        <br>
+        <input type="submit" value="Upload">
+    </form>
+
+    <br>
+    <a href="/">Back to Home</a>
+
+</body>
+</html>

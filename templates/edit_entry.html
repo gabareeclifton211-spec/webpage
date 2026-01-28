@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ title }}{% endblock %}
+{% block content %}
+<h1>Edit {{ title }}</h1>
+<form method="post">
+  <label for="content">Content</label>
+  <textarea id="content" name="content" rows="12" style="width:100%">{{ content }}</textarea>
+  <div class="form-row"><button type="submit">Save</button></div>
+</form>
+{% endblock %}
