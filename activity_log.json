@@ -1,0 +1,314 @@
+[
+    {
+        "action": "LOGIN",
+        "username": "Clifton",
+        "details": "Role: User",
+        "timestamp": "2026-01-24 10:33:00"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 10:50:44"
+    },
+    {
+        "action": "FILE_REASSIGN",
+        "username": "sysop",
+        "details": "File: 107_0644.jpg from sysop to Clifton",
+        "timestamp": "2026-01-25 10:51:21"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 12:15:38"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 12:21:56"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 12:34:57"
+    },
+    {
+        "action": "FILE_DELETE",
+        "username": "sysop",
+        "details": "File: 107_0644.jpg (Type: image)",
+        "timestamp": "2026-01-25 12:37:12"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:23:34"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:25:50"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:27:09"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:36:48"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:55:54"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 13:58:11"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-25 14:01:24"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 21:34:16"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 21:39:48"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "sysop",
+        "details": "User does not exist",
+        "timestamp": "2026-01-26 22:03:09"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "sysop",
+        "details": "User does not exist",
+        "timestamp": "2026-01-26 22:03:23"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "sysop",
+        "details": "User does not exist",
+        "timestamp": "2026-01-26 22:04:05"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 22:04:53"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 22:10:52"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 22:11:28"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-26 22:13:44"
+    },
+    {
+        "action": "LOGIN",
+        "username": "browser_test_user2",
+        "details": "Role: User",
+        "timestamp": "2026-01-27 08:06:30"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:16:00"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:19:00"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:19:31"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:22:28"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:47:29"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 09:58:37"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 10:03:18"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 10:07:37"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 10:15:48"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-27 10:43:28"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 12:34:55"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 12:49:33"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:04:06"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:04:53"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:08:09"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "clifton",
+        "details": "Incorrect password",
+        "timestamp": "2026-01-28 13:09:36"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "clifton",
+        "details": "Incorrect password",
+        "timestamp": "2026-01-28 13:09:48"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "sysop",
+        "details": "User does not exist",
+        "timestamp": "2026-01-28 13:10:05"
+    },
+    {
+        "action": "LOGIN_FAILED",
+        "username": "sysop",
+        "details": "User does not exist",
+        "timestamp": "2026-01-28 13:10:31"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:10:47"
+    },
+    {
+        "action": "ADMIN_EDIT_USER",
+        "username": "sysop",
+        "details": "Edited clifton",
+        "timestamp": "2026-01-28 13:11:21"
+    },
+    {
+        "action": "LOGIN",
+        "username": "tonia",
+        "details": "Role: User",
+        "timestamp": "2026-01-28 13:12:50"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:13:37"
+    },
+    {
+        "action": "LOGIN",
+        "username": "tonia",
+        "details": "Role: Admin",
+        "timestamp": "2026-01-28 13:15:03"
+    },
+    {
+        "action": "PASSWORD_RESET_EMAIL_FAILED",
+        "username": "tonia",
+        "details": "SMTP not configured",
+        "timestamp": "2026-01-28 13:23:10"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:23:53"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:35:24"
+    },
+    {
+        "action": "LOGIN",
+        "username": "sysop",
+        "details": "Master password used",
+        "timestamp": "2026-01-28 13:36:47"
+    }
+]

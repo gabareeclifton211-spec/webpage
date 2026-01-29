@@ -1,53 +1,5 @@
 import os
 import json
-<<<<<<< HEAD
-import html
-from datetime import datetime, timedelta
-import secrets
-import smtplib
-from email.mime.text import MIMEText
-import re
-from flask import Flask, render_template, request, redirect, session, jsonify, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-
-try:
-    from PIL import Image
-    HAS_PIL = True
-except Exception:
-    Image = None
-    HAS_PIL = False
-
-app = Flask(__name__)
-
-# Ensure a non-empty SECRET_KEY: prefer env var, then config.json, else use a clear development default
-_secret = os.environ.get('SECRET_KEY')
-if not _secret:
-    # Prefer local override file (not checked into repo)
-    try:
-        with open("config.local.json", "r") as f:
-            cfg_local = json.load(f)
-            _secret = cfg_local.get("SECRET_KEY") or None
-    except Exception:
-        _secret = None
-
-if not _secret:
-    try:
-        with open("config.json", "r") as f:
-            config = json.load(f)
-            # Treat empty strings as missing
-            _secret = config.get("SECRET_KEY") or None
-    except Exception as e:
-        print(f"Warning reading config.json for SECRET_KEY: {e}")
-        _secret = None
-
-if not _secret:
-    # Development fallback (do NOT use in production). Host should set SECRET_KEY env var.
-    _secret = "dev_supersecretkey_change_me"
-    print("Warning: SECRET_KEY not set in environment or config.json; using development default (not for production).")
-
-app.secret_key = _secret
-=======
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -67,7 +19,6 @@ else:
     except Exception as e:
         print(f"Warning reading config.json for SECRET_KEY: {e}")
         app.secret_key = "supersecretkey"
->>>>>>> origin/main
 
 # Upload folder
 UPLOAD_FOLDER = "uploads"
@@ -123,96 +74,6 @@ def log_activity(action, username, details=""):
     save_activity_log(log)
 
 
-<<<<<<< HEAD
-# -------------------------------
-# Password reset token helpers
-# -------------------------------
-PASSWORD_RESETS = "password_resets.json"
-
-def load_password_resets():
-    if os.path.exists(PASSWORD_RESETS):
-        with open(PASSWORD_RESETS, "r") as f:
-            try:
-                return json.load(f)
-            except Exception:
-                return []
-    return []
-
-def save_password_resets(data):
-    with open(PASSWORD_RESETS, "w") as f:
-        json.dump(data, f, indent=4)
-
-def create_reset_token(username, email, minutes_valid=15):
-    code = ''.join(secrets.choice('0123456789') for _ in range(6))
-    expiry = (datetime.now() + timedelta(minutes=minutes_valid)).strftime("%Y-%m-%d %H:%M:%S")
-    tokens = load_password_resets()
-    # Remove any existing tokens for this user
-    tokens = [t for t in tokens if t.get('username') != username]
-    tokens.append({
-        'username': username,
-        'email': email,
-        'code': code,
-        'expiry': expiry
-    })
-    save_password_resets(tokens)
-    return code
-
-def verify_reset_token(username, code):
-    tokens = load_password_resets()
-    now = datetime.now()
-    for t in tokens:
-        if t.get('username') == username and t.get('code') == code:
-            try:
-                expiry = datetime.strptime(t.get('expiry'), "%Y-%m-%d %H:%M:%S")
-            except Exception:
-                continue
-            if now <= expiry:
-                return True
-    return False
-
-def remove_reset_token(username):
-    tokens = load_password_resets()
-    tokens = [t for t in tokens if t.get('username') != username]
-    save_password_resets(tokens)
-
-
-def send_email(recipient, subject, body):
-    # Read SMTP configuration from env vars
-    smtp_server = os.environ.get('SMTP_SERVER')
-    smtp_port = os.environ.get('SMTP_PORT')
-    smtp_user = os.environ.get('SMTP_USER')
-    smtp_pass = os.environ.get('SMTP_PASS')
-    from_addr = os.environ.get('FROM_EMAIL') or smtp_user
-
-    if not smtp_server or not smtp_port:
-        # SMTP not configured
-        return False, 'SMTP not configured'
-
-    try:
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = from_addr
-        msg['To'] = recipient
-
-        port = int(smtp_port)
-        if port == 465:
-            server = smtplib.SMTP_SSL(smtp_server, port)
-        else:
-            server = smtplib.SMTP(smtp_server, port)
-            server.starttls()
-
-        if smtp_user and smtp_pass:
-            server.login(smtp_user, smtp_pass)
-
-        server.sendmail(from_addr, [recipient], msg.as_string())
-        server.quit()
-        return True, 'sent'
-    except Exception as e:
-        return False, str(e)
-
-
-=======
->>>>>>> origin/main
 # Helper: Storage statistics
 def get_storage_stats():
     stats = {
@@ -253,31 +114,6 @@ def get_storage_stats():
     return stats
 
 
-<<<<<<< HEAD
-# Load master password (prefer env var, then config.json). Treat empty values as missing.
-MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD')
-if not MASTER_PASSWORD:
-    # Try the local override first
-    try:
-        with open("config.local.json", "r") as f:
-            cfg_local = json.load(f)
-            MASTER_PASSWORD = cfg_local.get("MASTER_PASSWORD") or None
-    except Exception:
-        MASTER_PASSWORD = None
-
-if not MASTER_PASSWORD:
-    try:
-        with open("config.json", "r") as f:
-            config = json.load(f)
-            MASTER_PASSWORD = config.get("MASTER_PASSWORD") or None
-    except Exception as e:
-        print(f"Warning reading config.json for MASTER_PASSWORD: {e}")
-        MASTER_PASSWORD = None
-
-if not MASTER_PASSWORD:
-    MASTER_PASSWORD = "changeme"
-    print("Warning: MASTER_PASSWORD not set in environment or config.json; using development fallback (change for production).")
-=======
 # Load master password
 if 'MASTER_PASSWORD' in os.environ:
     MASTER_PASSWORD = os.environ['MASTER_PASSWORD']
@@ -289,7 +125,6 @@ else:
     except Exception as e:
         print(f"Warning reading config.json for MASTER_PASSWORD: {e}")
         MASTER_PASSWORD = "changeme"  # Fallback, should be set in production
->>>>>>> origin/main
 
 
 # -------------------------------
@@ -313,40 +148,6 @@ def register():
         username = request.form["username"].strip()
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
-<<<<<<< HEAD
-        email = request.form.get("email", "").strip()
-
-        if password != confirm_password:
-            return render_template('register.html', error='Passwords do not match', username=username, email=email)
-
-        # Sanitize username and ensure users directory exists
-        safe_username = secure_filename(username).lower()
-        if not safe_username:
-            return render_template('register.html', error='Invalid username.', username=username, email=email)
-
-        os.makedirs("users", exist_ok=True)
-        user_file = os.path.join("users", f"{safe_username}.json")
-        if os.path.exists(user_file):
-            return "Username already taken."
-
-        # Validate email format if provided
-        if email:
-            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-                return render_template('register.html', error='Invalid email address', username=username, email=email)
-
-        user_data = {
-            "username": safe_username,
-            "password": generate_password_hash(password),
-            "is_admin": False,
-            "email": email
-        }
-
-        try:
-            with open(user_file, "w") as f:
-                json.dump(user_data, f, indent=4)
-        except Exception as e:
-            return f"Failed to create user: {e}", 500
-=======
 
         if password != confirm_password:
             return "Passwords do not match."
@@ -363,7 +164,6 @@ def register():
 
         with open(user_file, "w") as f:
             json.dump(user_data, f, indent=4)
->>>>>>> origin/main
 
         return redirect("/login")
 
@@ -387,44 +187,22 @@ def login():
             return redirect("/")
 
         # NORMAL USER LOGIN
-<<<<<<< HEAD
-        # sanitize the username to match stored filenames
-        safe_username = secure_filename(username).lower()
-        if not safe_username:
-            log_activity("LOGIN_FAILED", username, "Invalid username format")
-            return "User does not exist"
-
-        user_file = os.path.join("users", f"{safe_username}.json")
-
-        if not os.path.exists(user_file):
-            log_activity("LOGIN_FAILED", safe_username, "User does not exist")
-=======
         user_file = os.path.join("users", f"{username}.json")
 
         if not os.path.exists(user_file):
             log_activity("LOGIN_FAILED", username, "User does not exist")
->>>>>>> origin/main
             return "User does not exist"
 
         with open(user_file, "r") as f:
             user_data = json.load(f)
 
         if check_password_hash(user_data["password"], password):
-<<<<<<< HEAD
-            session["username"] = safe_username
-            session["is_admin"] = user_data.get("is_admin", False)
-            log_activity("LOGIN", safe_username, f"Role: {'Admin' if user_data.get('is_admin') else 'User'}")
-            return redirect("/")
-
-        log_activity("LOGIN_FAILED", safe_username, "Incorrect password")
-=======
             session["username"] = username
             session["is_admin"] = user_data.get("is_admin", False)
             log_activity("LOGIN", username, f"Role: {'Admin' if user_data.get('is_admin') else 'User'}")
             return redirect("/")
 
         log_activity("LOGIN_FAILED", username, "Incorrect password")
->>>>>>> origin/main
         return "Incorrect password"
 
     return render_template("login.html")
@@ -455,188 +233,6 @@ def index():
 
 
 # -------------------------------
-<<<<<<< HEAD
-# Change Password (for logged-in users)
-# -------------------------------
-@app.route('/change_password', methods=["GET", "POST"])
-@login_required
-def change_password():
-    username = session.get('username')
-    # sysop is a session-only account with no user file
-    if username == 'sysop':
-        return "sysop account password cannot be changed here", 400
-
-    safe_username = secure_filename(username or "").lower()
-    if not safe_username:
-        return "User not found", 404
-
-    user_path = os.path.join('users', f"{safe_username}.json")
-    if not os.path.exists(user_path):
-        return "User not found", 404
-
-    if request.method == 'POST':
-        current = request.form.get('current_password', '')
-        newpw = request.form.get('new_password', '')
-        confirm = request.form.get('confirm_password', '')
-
-        if not newpw or newpw != confirm:
-            return render_template('change_password.html', error='New passwords do not match')
-
-        try:
-            with open(user_path, 'r') as f:
-                user_data = json.load(f)
-        except Exception:
-            return "Failed to read user data", 500
-
-        # Verify current password
-        if not check_password_hash(user_data.get('password', ''), current):
-            return render_template('change_password.html', error='Current password incorrect')
-
-        # Update password hash
-        user_data['password'] = generate_password_hash(newpw)
-        try:
-            with open(user_path, 'w') as f:
-                json.dump(user_data, f, indent=4)
-        except Exception:
-            return "Failed to update password", 500
-
-        log_activity('PASSWORD_CHANGE', safe_username, 'User changed own password')
-        return redirect('/')
-
-    return render_template('change_password.html')
-
-
-# -------------------------------
-# Forgot Password (master reset or admin reset)
-# -------------------------------
-@app.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        newpw = request.form.get('new_password', '')
-        confirm = request.form.get('confirm_password', '')
-        master = request.form.get('master_password', '')
-
-        if not username:
-            return render_template('forgot_password.html', error='Username is required')
-
-        if not newpw or newpw != confirm:
-            return render_template('forgot_password.html', error='New passwords do not match')
-
-        safe_username = secure_filename(username or '').lower()
-        if not safe_username:
-            return render_template('forgot_password.html', error='Invalid username')
-
-        user_path = os.path.join('users', f"{safe_username}.json")
-        if not os.path.exists(user_path):
-            return render_template('forgot_password.html', error='User does not exist')
-
-        # Authorization: allow if logged-in admin, or valid MASTER_PASSWORD provided
-        actor = None
-        if session.get('is_admin'):
-            actor = session.get('username')
-        elif master and master == MASTER_PASSWORD:
-            actor = 'sysop'
-        else:
-            return render_template('forgot_password.html', error='Unauthorized: provide master password or be logged in as admin')
-
-        try:
-            with open(user_path, 'r') as f:
-                user_data = json.load(f)
-        except Exception:
-            return render_template('forgot_password.html', error='Failed to read user data')
-
-        user_data['password'] = generate_password_hash(newpw)
-        try:
-            with open(user_path, 'w') as f:
-                json.dump(user_data, f, indent=4)
-        except Exception:
-            return render_template('forgot_password.html', error='Failed to update password')
-
-        log_activity('PASSWORD_RESET', actor, f'Reset password for {safe_username}')
-        return redirect('/login')
-
-    return render_template('forgot_password.html')
-
-
-@app.route('/forgot_password/request', methods=['GET', 'POST'])
-def forgot_password_request():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        if not username:
-            return render_template('forgot_password_request.html', error='Username is required')
-
-        safe_username = secure_filename(username or '').lower()
-        user_path = os.path.join('users', f"{safe_username}.json")
-        if not os.path.exists(user_path):
-            return render_template('forgot_password_request.html', error='User does not exist')
-
-        with open(user_path, 'r') as f:
-            user_data = json.load(f)
-
-        email = user_data.get('email')
-        if not email:
-            return render_template('forgot_password_request.html', error='No email on file; contact an admin')
-
-        code = create_reset_token(safe_username, email)
-
-        # Try to send email; if SMTP not configured, show code on the page as fallback
-        ok, info = send_email(email, 'Password reset code', f'Your password reset code is: {code}')
-        if not ok:
-            # log and return page with code displayed
-            log_activity('PASSWORD_RESET_EMAIL_FAILED', safe_username, info)
-            return render_template('forgot_password_request.html', notice=f'Email not configured; use code: {code}')
-
-        log_activity('PASSWORD_RESET_REQUEST', safe_username, f'Email sent to {email}')
-        return render_template('forgot_password_request.html', notice='Verification code sent to your email')
-
-    return render_template('forgot_password_request.html')
-
-
-@app.route('/forgot_password/verify', methods=['GET', 'POST'])
-def forgot_password_verify():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        code = request.form.get('code', '').strip()
-        newpw = request.form.get('new_password', '')
-        confirm = request.form.get('confirm_password', '')
-
-        if not username or not code:
-            return render_template('forgot_password_verify.html', error='Username and code are required')
-        if not newpw or newpw != confirm:
-            return render_template('forgot_password_verify.html', error='New passwords do not match')
-
-        safe_username = secure_filename(username or '').lower()
-        if not verify_reset_token(safe_username, code):
-            return render_template('forgot_password_verify.html', error='Invalid or expired code')
-
-        user_path = os.path.join('users', f"{safe_username}.json")
-        if not os.path.exists(user_path):
-            return render_template('forgot_password_verify.html', error='User does not exist')
-
-        try:
-            with open(user_path, 'r') as f:
-                user_data = json.load(f)
-        except Exception:
-            return render_template('forgot_password_verify.html', error='Failed to read user data')
-
-        user_data['password'] = generate_password_hash(newpw)
-        try:
-            with open(user_path, 'w') as f:
-                json.dump(user_data, f, indent=4)
-        except Exception:
-            return render_template('forgot_password_verify.html', error='Failed to update password')
-
-        remove_reset_token(safe_username)
-        log_activity('PASSWORD_RESET_VERIFIED', safe_username, 'User reset password via email code')
-        return redirect('/login')
-
-    return render_template('forgot_password_verify.html')
-
-
-# -------------------------------
-=======
->>>>>>> origin/main
 # Create New Entry (legacy route, still usable if you want)
 # -------------------------------
 @app.route("/new", methods=["GET", "POST"])
@@ -1038,12 +634,7 @@ def admin_users():
                 data = json.load(f)
             users.append({
                 "username": filename.replace(".json", ""),
-<<<<<<< HEAD
-                "is_admin": data.get("is_admin", False),
-                "email": data.get("email", "")
-=======
                 "is_admin": data.get("is_admin", False)
->>>>>>> origin/main
             })
 
     return render_template("admin_users.html", users=users)
@@ -1054,16 +645,8 @@ def admin_users():
 def toggle_admin(username):
     if not session.get("is_admin"):
         return "Access denied"
-<<<<<<< HEAD
-    safe_username = secure_filename(username).lower()
-    if not safe_username:
-        return "User not found"
-
-    filepath = os.path.join("users", f"{safe_username}.json")
-=======
 
     filepath = os.path.join("users", f"{username}.json")
->>>>>>> origin/main
     if not os.path.exists(filepath):
         return "User not found"
 
@@ -1083,103 +666,17 @@ def toggle_admin(username):
 def delete_user(username):
     if not session.get("is_admin"):
         return "Access denied"
-<<<<<<< HEAD
-    safe_username = secure_filename(username).lower()
-    if not safe_username:
-        return "User not found"
-
-    if safe_username == "sysop":
-        return "Cannot delete sysop"
-
-    filepath = os.path.join("users", f"{safe_username}.json")
-=======
 
     if username == "sysop":
         return "Cannot delete sysop"
 
     filepath = os.path.join("users", f"{username}.json")
->>>>>>> origin/main
     if os.path.exists(filepath):
         os.remove(filepath)
 
     return redirect("/admin/users")
 
 
-<<<<<<< HEAD
-@app.route('/admin/user/<username>', methods=['GET', 'POST'])
-@login_required
-def admin_edit_user(username):
-    if not session.get('is_admin'):
-        return "Access denied"
-
-    safe_username = secure_filename(username or '').lower()
-    if not safe_username:
-        return "User not found"
-
-    user_path = os.path.join('users', f"{safe_username}.json")
-    if not os.path.exists(user_path):
-        return "User not found"
-
-    try:
-        with open(user_path, 'r') as f:
-            user_data = json.load(f)
-    except Exception:
-        return "Failed to read user data", 500
-
-    if request.method == 'POST':
-        # Update fields dynamically based on existing user_data keys
-        for key, val in list(user_data.items()):
-            if key == 'password' or key == 'username':
-                continue
-
-            # Booleans come from checkboxes: present=on
-            if isinstance(val, bool):
-                user_data[key] = bool(request.form.get(key))
-                continue
-
-            # For lists or dicts, expect JSON in textarea
-            if isinstance(val, (list, dict)):
-                text = request.form.get(key, '')
-                try:
-                    parsed = json.loads(text) if text else [] if isinstance(val, list) else {}
-                    user_data[key] = parsed
-                except Exception:
-                    return render_template('admin_edit_user.html', username=safe_username, user=user_data, error=f'Invalid JSON for field: {key}')
-                continue
-
-            # Strings: simple strip
-            user_data[key] = request.form.get(key, '').strip()
-
-        # Optional new password
-        newpw = request.form.get('new_password', '')
-        if newpw:
-            if len(newpw) < 8:
-                return render_template('admin_edit_user.html', username=safe_username, user=user_data, error='New password must be at least 8 characters')
-            user_data['password'] = generate_password_hash(newpw)
-
-        # Ensure username field stays consistent
-        user_data['username'] = safe_username
-
-        # Validate email if present
-        email_val = user_data.get('email', '')
-        if email_val:
-            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email_val):
-                return render_template('admin_edit_user.html', username=safe_username, user=user_data, error='Invalid email address')
-
-        try:
-            with open(user_path, 'w') as f:
-                json.dump(user_data, f, indent=4)
-        except Exception:
-            return "Failed to save user data", 500
-
-        log_activity('ADMIN_EDIT_USER', session.get('username'), f'Edited {safe_username}')
-        return redirect('/admin/users')
-
-    return render_template('admin_edit_user.html', username=safe_username, user=user_data)
-
-
-=======
->>>>>>> origin/main
 # -------------------------------
 # ADMIN: Upload Management
 # -------------------------------
@@ -1223,17 +720,8 @@ def api_reassign_upload():
     if not filename or not new_user:
         return {"status": "error", "message": "Missing parameters"}
     
-<<<<<<< HEAD
-    # Check if user exists (sanitize username)
-    safe_new_user = secure_filename(new_user or "").lower()
-    if not safe_new_user:
-        return {"status": "error", "message": "User does not exist"}
-
-    user_file = os.path.join("users", f"{safe_new_user}.json")
-=======
     # Check if user exists
     user_file = os.path.join("users", f"{new_user}.json")
->>>>>>> origin/main
     if not os.path.exists(user_file):
         return {"status": "error", "message": "User does not exist"}
     
@@ -1243,17 +731,10 @@ def api_reassign_upload():
     for item in metadata:
         if item["filename"] == filename:
             old_user = item.get("assigned_to")
-<<<<<<< HEAD
-            item["assigned_to"] = safe_new_user
-            save_upload_metadata(metadata)
-            log_activity("FILE_REASSIGN", session.get("username"), f"File: {filename} from {old_user} to {safe_new_user}")
-            return {"status": "ok", "message": f"File assigned to {safe_new_user}"}
-=======
             item["assigned_to"] = new_user
             save_upload_metadata(metadata)
             log_activity("FILE_REASSIGN", session.get("username"), f"File: {filename} from {old_user} to {new_user}")
             return {"status": "ok", "message": f"File assigned to {new_user}"}
->>>>>>> origin/main
     
     return {"status": "error", "message": "File not found"}
 
@@ -1351,81 +832,9 @@ def family_tree():
     if os.path.exists(family_file):
         with open(family_file, "r") as f:
             family = json.load(f)
-<<<<<<< HEAD
-    # Augment members with photo URLs (thumbnail for lists)
-    image_folder = os.path.join('static', 'images')
-    for m in family:
-        photo = m.get('photo')
-        if photo:
-            full = os.path.join(image_folder, photo)
-            thumb = os.path.join(image_folder, f"thumb_{photo}")
-            if os.path.exists(thumb):
-                m['photo_thumb_url'] = url_for('static', filename=f'images/thumb_{photo}')
-            elif os.path.exists(full):
-                m['photo_thumb_url'] = url_for('static', filename=f'images/{photo}')
-            else:
-                m['photo_thumb_url'] = url_for('static', filename='images/default_avatar.svg')
-            if os.path.exists(full):
-                m['photo_url'] = url_for('static', filename=f'images/{photo}')
-            else:
-                m['photo_url'] = url_for('static', filename='images/default_avatar.svg')
-        else:
-            m['photo_thumb_url'] = url_for('static', filename='images/default_avatar.svg')
-            m['photo_url'] = url_for('static', filename='images/default_avatar.svg')
-
     return render_template("family.html", family=family)
 
 
-@app.route('/member/<int:member_id>')
-@login_required
-def view_member(member_id):
-    family_file = os.path.join('family', 'family.json')
-    family = []
-    if os.path.exists(family_file):
-        with open(family_file, 'r') as f:
-            family = json.load(f)
-
-    member = next((m for m in family if m.get('id') == member_id), None)
-    if not member:
-        return 'Member not found', 404
-
-    # Helper to resolve list of members by ids
-    def resolve(ids):
-        return [next((x for x in family if x.get('id') == i), None) for i in ids]
-
-    parents = resolve(member.get('parents', []))
-    children = resolve(member.get('children', []))
-    spouses = resolve(member.get('spouse', []))
-
-    # Attach photo URLs (full and thumbnail) for member and relations
-    image_folder = os.path.join('static', 'images')
-    def attach_photos(person):
-        if not person:
-            return None
-        photo = person.get('photo')
-        if photo:
-            full = os.path.join(image_folder, photo)
-            thumb = os.path.join(image_folder, f"thumb_{photo}")
-            person['photo_url'] = url_for('static', filename=f'images/{photo}') if os.path.exists(full) else url_for('static', filename='images/default_avatar.svg')
-            person['photo_thumb_url'] = url_for('static', filename=f'images/thumb_{photo}') if os.path.exists(thumb) else person['photo_url']
-        else:
-            person['photo_url'] = url_for('static', filename='images/default_avatar.svg')
-            person['photo_thumb_url'] = person['photo_url']
-        return person
-
-    attach_photos(member)
-    parents = [attach_photos(p) for p in parents if p]
-    children = [attach_photos(c) for c in children if c]
-    spouses = [attach_photos(s) for s in spouses if s]
-
-    return render_template('view_member.html', member=member, parents=parents, children=children, spouses=spouses)
-
-
-=======
-    return render_template("family.html", family=family)
-
-
->>>>>>> origin/main
 # -------------------------------
 # Add Family Member
 # -------------------------------
@@ -1460,32 +869,6 @@ def add_member():
                             break
             return result
 
-<<<<<<< HEAD
-        # Handle photo upload
-        photo_file = request.files.get('photo')
-        photo_name = None
-        if photo_file and getattr(photo_file, 'filename', ''):
-            safe_orig = secure_filename(photo_file.filename)
-            lower = safe_orig.lower()
-            name = f"member_{new_id}_{secrets.token_hex(6)}_{lower}"
-            image_folder = os.path.join('static', 'images')
-            os.makedirs(image_folder, exist_ok=True)
-            save_path = os.path.join(image_folder, name)
-            photo_file.save(save_path)
-            photo_name = name
-            # create thumbnail if Pillow is available
-            if HAS_PIL:
-                try:
-                    img = Image.open(save_path)
-                    img.thumbnail((160, 160))
-                    thumb_name = f"thumb_{name}"
-                    thumb_path = os.path.join(image_folder, thumb_name)
-                    img.save(thumb_path)
-                except Exception:
-                    pass
-
-=======
->>>>>>> origin/main
         member = {
             "id": new_id,
             "first_name": request.form["first_name"],
@@ -1498,11 +881,7 @@ def add_member():
             "parents": resolve_to_ids(request.form.get("parents", ""), family),
             "children": resolve_to_ids(request.form.get("children", ""), family),
             "spouse": resolve_to_ids(request.form.get("spouse", ""), family),
-<<<<<<< HEAD
-            "photo": photo_name,
-=======
             "photo": None,
->>>>>>> origin/main
             "bio": request.form.get("bio", "")
         }
 
@@ -1563,43 +942,6 @@ def edit_member(member_id):
         member["children"] = resolve_to_ids(request.form.get("children", ""), family)
         member["spouse"] = resolve_to_ids(request.form.get("spouse", ""), family)
         member["bio"] = request.form.get("bio", "")
-<<<<<<< HEAD
-
-        # Handle uploaded photo (optional)
-        photo_file = request.files.get('photo')
-        if photo_file and getattr(photo_file, 'filename', ''):
-            safe_orig = secure_filename(photo_file.filename)
-            lower = safe_orig.lower()
-            name = f"member_{member_id}_{secrets.token_hex(6)}_{lower}"
-            image_folder = os.path.join('static', 'images')
-            os.makedirs(image_folder, exist_ok=True)
-            save_path = os.path.join(image_folder, name)
-            old_photo = member.get('photo')
-            photo_file.save(save_path)
-            # create thumbnail if Pillow is available
-            if HAS_PIL:
-                try:
-                    img = Image.open(save_path)
-                    img.thumbnail((160, 160))
-                    thumb_name = f"thumb_{name}"
-                    thumb_path = os.path.join(image_folder, thumb_name)
-                    img.save(thumb_path)
-                except Exception:
-                    pass
-            # Update photo field and remove previous files
-            member['photo'] = name
-            if old_photo:
-                try:
-                    old_path = os.path.join(image_folder, old_photo)
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
-                    old_thumb = os.path.join(image_folder, f"thumb_{old_photo}")
-                    if os.path.exists(old_thumb):
-                        os.remove(old_thumb)
-                except Exception:
-                    pass
-=======
->>>>>>> origin/main
         with open(family_file, "w") as f:
             json.dump(family, f, indent=4)
         return redirect("/family")
@@ -1653,45 +995,6 @@ def relationships():
 
 
 # -------------------------------
-<<<<<<< HEAD
-# Debug: expose the on-disk index.html source for comparison
-# -------------------------------
-@app.route('/_debug_index_source')
-def _debug_index_source():
-    try:
-        path = os.path.join('templates', 'index.html')
-        with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        return '<pre>' + html.escape(content) + '</pre>'
-    except Exception as e:
-        return f'Error reading template: {e}', 500
-
-
-@app.route('/_clear_template_cache')
-def _clear_template_cache():
-    try:
-        app.jinja_env.cache.clear()
-        return 'template cache cleared'
-    except Exception as e:
-        return f'failed to clear cache: {e}', 500
-
-
-@app.route('/_debug_routes')
-def _debug_routes():
-    # Accessible in debug mode or to admins in-session
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    if not debug_mode and not session.get('is_admin'):
-        return 'Access denied', 403
-    rules = []
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(sorted(rule.methods - {'HEAD', 'OPTIONS'}))
-        rules.append(f"{rule.rule}  [{methods}]")
-    return '<pre>' + '\n'.join(sorted(rules)) + '</pre>'
-
-
-# -------------------------------
-=======
->>>>>>> origin/main
 # Run App
 # -------------------------------
 if __name__ == "__main__":

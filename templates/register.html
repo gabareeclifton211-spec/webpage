@@ -42,24 +42,6 @@
 
     <h1>Create an Account</h1>
 
-<<<<<<< HEAD
-        {% if error %}
-            <div style="color: red; margin-bottom: 12px;">{{ error }}</div>
-        {% endif %}
-
-    <form id="registerForm" method="POST" action="/register">
-        <label>Username:</label><br>
-        <input id="username" type="text" name="username" required value="{{ username or '' }}"><br>
-
-        <label>Password:</label><br>
-        <input id="password" type="password" name="password" required><br>
-
-        <label>Email (optional):</label><br>
-        <input id="email" type="text" name="email" placeholder="you@example.com" value="{{ email or '' }}"><br>
-
-        <label>Confirm Password:</label><br>
-        <input id="confirm_password" type="password" name="confirm_password" required><br>
-=======
     <form method="POST" action="/register">
         <label>Username:</label><br>
         <input type="text" name="username" required><br>
@@ -69,7 +51,6 @@
 
         <label>Confirm Password:</label><br>
         <input type="password" name="confirm_password" required><br>
->>>>>>> origin/main
 
         <input type="submit" value="Register">
     </form>

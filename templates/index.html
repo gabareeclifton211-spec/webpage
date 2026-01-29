@@ -82,17 +82,6 @@
             color: red;
             font-weight: bold;
         }
-<<<<<<< HEAD
-
-                /* Mobile nav toggle */
-                .nav-toggle{display:none}
-                @media (max-width:720px){
-                    .nav{display:none}
-                    body.nav-open .nav{display:flex;flex-direction:column;gap:6px;padding:12px}
-                    .nav-toggle{display:block;position:absolute;top:10px;right:10px;background:none;border:0;color:white;font-size:26px}
-                }
-=======
->>>>>>> origin/main
     </style>
 
     <script>
@@ -108,11 +97,6 @@
 </head>
 
 <body>
-<<<<<<< HEAD
-    <!-- NAV_FROM_INDEX -->
-    <button id="nav-toggle" class="nav-toggle" onclick="document.body.classList.toggle('nav-open')">☰</button>
-=======
->>>>>>> origin/main
 {% if session.get("is_admin") %}
     <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
         <a href="/admin/dashboard" 
@@ -177,11 +161,7 @@
 
     <h1 style="font-size:48px; margin-top:60px; letter-spacing:2px;">Welcome to the Family Tree</h1>
 
-<<<<<<< HEAD
-    <div id="nav-menu" class="nav" style="margin-top:40px;">
-=======
     <div class="nav" style="margin-top:40px;">
->>>>>>> origin/main
         <a href="/family">Family Tree</a>
         <a href="/relationships">Family Relationships</a>
         <a href="/media">Media Gallery</a>
@@ -201,41 +181,5 @@
 
     <div id="clock"></div>
 
-<<<<<<< HEAD
-<script>
-// Ensure a mobile nav toggle exists and attach behaviors
-(function(){
-    try{
-        var toggle = document.getElementById('nav-toggle');
-        var menu = document.getElementById('nav-menu') || document.querySelector('.nav') || document.querySelector('nav');
-        if(!menu) return;
-        if(!toggle){
-            toggle = document.createElement('button');
-            toggle.id = 'nav-toggle';
-            toggle.className = 'nav-toggle';
-            toggle.innerText = '☰';
-            toggle.style.cssText = 'display:block;position:absolute;top:10px;right:10px;background:none;border:0;color:white;font-size:26px';
-            document.body.insertBefore(toggle, document.body.firstChild);
-        }
-        var setAria = function(v){ try{ toggle.setAttribute('aria-expanded', String(v)); }catch(e){} };
-        toggle.addEventListener('click', function(){
-            menu.classList.toggle('open');
-            document.body.classList.toggle('nav-open');
-            setAria(menu.classList.contains('open') || document.body.classList.contains('nav-open'));
-        });
-        document.addEventListener('click', function(e){
-            if(!menu.contains(e.target) && !toggle.contains(e.target)){
-                menu.classList.remove('open');
-                document.body.classList.remove('nav-open');
-                setAria(false);
-            }
-        });
-        document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); } });
-        Array.from(menu.querySelectorAll('a')).forEach(function(a){ a.addEventListener('click', function(){ menu.classList.remove('open'); document.body.classList.remove('nav-open'); setAria(false); }); });
-    }catch(err){ console.warn('index nav init error', err); }
-})();
-</script>
-=======
->>>>>>> origin/main
 </body>
 </html>

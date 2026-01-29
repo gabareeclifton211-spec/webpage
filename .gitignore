@@ -55,13 +55,6 @@ uploads/**
 
 # Config files with sensitive data
 config.json
-<<<<<<< HEAD
-config.local.json
-=======
->>>>>>> origin/main
-activity_log.json
-uploads_metadata.json
-
-# Database files (if using SQLite in future)
+ 
 *.db
 *.sqlite
