@@ -1,173 +1,93 @@
 [
     {
         "id": 1,
-<<<<<<< HEAD
         "first_name": "Elizabeth",
         "last_name": "Young",
+        "middle_name": "Marie",
+        "suffix": "",
         "birth_date": "1997-09-29",
         "death_date": null,
         "gender": "female",
-        "parents": [
-            4,
-            5
-        ],
-        "children": [
-            7,
-            8,
-=======
-        "first_name": "John",
-        "last_name": "Doe",
-        "birth_date": "1950-01-01",
-        "death_date": null,
-        "gender": "male",
-        "parents": [],
-        "children": [
->>>>>>> origin/main
-            2
-        ],
-        "spouse": [
-            3
-        ],
+        "parents": [4, 5],
+        "children": [7, 8],
+        "spouse": [3],
         "photo": null,
-<<<<<<< HEAD
-        "bio": "",
-        "middle_name": "Marie",
-        "suffix": ""
+        "bio": ""
     },
     {
         "id": 2,
         "first_name": "Raelynn",
         "last_name": "Cyr",
+        "middle_name": "",
+        "suffix": "",
         "birth_date": "2022-01-26",
-=======
-        "bio": "Patriarch of the Doe family.",
-        "middle_name": "Allen"
-    },
-    {
-        "id": 2,
-        "first_name": "Jane",
-        "last_name": "Doe",
-        "birth_date": "1975-05-10",
->>>>>>> origin/main
         "death_date": null,
         "gender": "female",
-        "parents": [
-            1,
-            3
-        ],
+        "parents": [1, 3],
         "children": [],
         "spouse": [],
         "photo": null,
-<<<<<<< HEAD
-        "bio": "Daughter of Elizabeth Young and Steven Cyr.",
-        "middle_name": "",
-        "suffix": ""
+        "bio": "Daughter of Elizabeth Young and Steven Cyr."
     },
     {
         "id": 3,
-        "first_name": "Stephen ",
+        "first_name": "Stephen",
         "last_name": "Cyr",
+        "middle_name": "",
+        "suffix": "",
         "birth_date": "1900-01-01",
         "death_date": null,
         "gender": "male",
-=======
-        "bio": "Daughter of John and Mary Doe."
-    },
-    {
-        "id": 3,
-        "first_name": "Mary",
-        "last_name": "Doe",
-        "birth_date": "1952-03-15",
-        "death_date": null,
-        "gender": "female",
->>>>>>> origin/main
         "parents": [],
-        "children": [
-            2
-        ],
-        "spouse": [
-            1
-        ],
+        "children": [2],
+        "spouse": [1],
         "photo": null,
-<<<<<<< HEAD
-        "bio": "",
-        "middle_name": "",
-        "suffix": ""
-=======
-        "bio": "Matriarch of the Doe family."
->>>>>>> origin/main
+        "bio": ""
     },
     {
         "id": 4,
-        "first_name": "Clifton ",
+        "first_name": "Clifton",
         "last_name": "Gabaree",
+        "middle_name": "Arthur",
+        "suffix": "Jr.",
         "birth_date": "1975-07-01",
         "death_date": null,
         "gender": "male",
-        "parents": [
-<<<<<<< HEAD
-            6,
-            11
-        ],
-        "children": [
-            1
-        ],
-        "spouse": [
-            5
-        ],
+        "parents": [6, 11],
+        "children": [1],
+        "spouse": [5],
         "photo": "member_4_fca70b2f6532_img_20221130_054232_01.jpg",
-=======
-            6
-        ],
-        "children": [],
-        "spouse": [
-            5
-        ],
-        "photo": null,
->>>>>>> origin/main
-        "bio": "",
-        "middle_name": "Arthur",
-        "suffix": "Jr."
+        "bio": ""
     },
     {
         "id": 5,
-        "first_name": "Tonia ",
+        "first_name": "Tonia",
         "last_name": "Gabaree",
+        "middle_name": "",
+        "suffix": "",
         "birth_date": "1970-06-14",
         "death_date": null,
         "gender": "female",
         "parents": [],
         "children": [],
-        "spouse": [
-            4
-        ],
-<<<<<<< HEAD
+        "spouse": [4],
         "photo": "member_5_0cf6fe1a9ac9_pxl_20230713_184623617.jpg",
-        "bio": "",
-        "middle_name": "",
-        "suffix": ""
-=======
-        "photo": null,
         "bio": ""
->>>>>>> origin/main
     },
     {
         "id": 6,
-        "first_name": "Clifton ",
+        "first_name": "Clifton",
         "last_name": "Gabaree",
+        "middle_name": "",
+        "suffix": "",
         "birth_date": "1939-07-07",
         "death_date": null,
         "gender": "male",
         "parents": [],
-        "children": [
-            4
-        ],
+        "children": [4],
         "spouse": [],
         "photo": null,
-        "bio": "",
-        "middle_name": "",
-        "suffix": ""
-<<<<<<< HEAD
+        "bio": ""
     },
     {
         "id": 7,
@@ -193,10 +113,7 @@
         "birth_date": "2016-01-01",
         "death_date": null,
         "gender": "female",
-        "parents": [
-            1,
-            9
-        ],
+        "parents": [1, 9],
         "children": [],
         "spouse": [],
         "photo": null,
@@ -204,7 +121,7 @@
     },
     {
         "id": 9,
-        "first_name": "Dereck ",
+        "first_name": "Dereck",
         "middle_name": "",
         "last_name": "Holloway",
         "suffix": "",
@@ -226,12 +143,8 @@
         "birth_date": "1900-01-01",
         "death_date": null,
         "gender": "female",
-        "parents": [
-            5
-        ],
-        "children": [
-            7
-        ],
+        "parents": [5],
+        "children": [7],
         "spouse": [],
         "photo": null,
         "bio": ""
@@ -260,10 +173,7 @@
         "birth_date": "1970-08-01",
         "death_date": null,
         "gender": "female",
-        "parents": [
-            6,
-            11
-        ],
+        "parents": [6, 11],
         "children": [],
         "spouse": [],
         "photo": null,
@@ -271,16 +181,14 @@
     },
     {
         "id": 13,
-        "first_name": "Brandon ",
+        "first_name": "Brandon",
         "middle_name": "",
         "last_name": "Gabaree",
         "suffix": "",
         "birth_date": "1996-01-01",
         "death_date": null,
         "gender": "male",
-        "parents": [
-            4
-        ],
+        "parents": [4],
         "children": [],
         "spouse": [],
         "photo": null,
@@ -295,15 +203,11 @@
         "birth_date": "1976-01-01",
         "death_date": null,
         "gender": "female",
-        "parents": [
-            6,
-            11
-        ],
+        "parents": [6, 11],
         "children": [],
         "spouse": [],
         "photo": null,
         "bio": ""
-=======
->>>>>>> origin/main
     }
+]
 ]
