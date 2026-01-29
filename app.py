@@ -25,6 +25,21 @@ UPLOAD_FOLDER = "uploads"
 UPLOADS_METADATA = "uploads_metadata.json"
 ACTIVITY_LOG = "activity_log.json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Ensure common runtime directories exist so file operations won't fail
+os.makedirs("users", exist_ok=True)
+os.makedirs("text_entries", exist_ok=True)
+os.makedirs("family", exist_ok=True)
+os.makedirs(os.path.join("static", "images"), exist_ok=True)
+os.makedirs(os.path.join("static", "videos"), exist_ok=True)
+
+# Create empty metadata/log files if they don't exist to avoid FileNotFoundError
+if not os.path.exists(UPLOADS_METADATA):
+    with open(UPLOADS_METADATA, "w") as f:
+        json.dump([], f)
+
+if not os.path.exists(ACTIVITY_LOG):
+    with open(ACTIVITY_LOG, "w") as f:
+        json.dump([], f)
 
 # Helper: Load/Save upload metadata
 def load_upload_metadata():
