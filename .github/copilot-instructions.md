@@ -1,64 +1,67 @@
-<!-- Copilot instructions for code assistance in this repository -->
-# Quick Onboarding for AI coding agents
 
-This file captures the minimal, actionable project knowledge an AI agent needs to be productive in this repo.
+# AI Coding Agent Onboarding: Project-Specific Instructions
 
-**Big Picture:**
-- **App type:** Small Flask web app served from `app.py`.
-- **Storage:** All runtime state is filesystem-based (JSON and flat files) — see `users/`, `uploads_metadata.json`, `activity_log.json`, `family/family.json`, and `text_entries/`.
-- **Static assets:** Images and videos live under `static/images/` and `static/videos/` respectively; uploaded generic files may be in `uploads/`.
+This guide provides actionable, up-to-date knowledge for AI coding agents working in this repository. **Focus on these patterns, conventions, and workflows to be productive immediately.**
 
-**Key Files & Where to Look**
-- `app.py`: central app, routes, auth logic, and all API handlers.
-- `config.json`: local defaults for `MASTER_PASSWORD` and `SECRET_KEY` (production should use env vars).
-- `requirements.txt`: `Flask==2.3.3`, `Werkzeug==2.3.7` — install with `pip install -r requirements.txt`.
-- Templates: `templates/` mirrors routes (e.g., `text.html`, `admin_uploads.html`, `login.html`).
-- Data folders: `users/` (per-user JSON), `text_entries/`, `family/`, `uploads/`, `static/`.
+## Big Picture & Architecture
+- **Type:** Single-file Flask web app (`app.py`), serving HTML templates and static assets.
+- **State:** All runtime and persistent data is stored as JSON or flat files on disk (no database).
+- **Key Data Folders:**
+	- `users/`: Per-user JSON records (`username`, hashed `password`, `is_admin`)
+	- `uploads/`, `uploads_metadata.json`: Uploaded files and their metadata
+	- `activity_log.json`: Audit log (last ~1000 actions)
+	- `family/family.json`, `text_entries/`: Family and text entry data
+	- `static/images/`, `static/videos/`: Media assets
 
-**Auth & Permissions (important)**
-- Login is session-based. Normal users are stored in `users/<username>.json` with fields `{username, password (hashed), is_admin}`.
-- A `MASTER_PASSWORD` (env or `config.json`) bypasses user passwords and creates `session['username']='sysop'` with `is_admin=True` — treat `MASTER_PASSWORD` as highly sensitive.
+## Core Files & Patterns
+- **`app.py`:**
+	- All routes, API endpoints, and authentication logic are here
+	- Helper functions: `add_upload_record()`, `log_activity()` (always use these for uploads/audit)
+- **Templates:**
+	- Located in `templates/`, named to match routes (e.g., `login.html`, `admin_uploads.html`)
+- **Config:**
+	- `config.json` (local dev), but `SECRET_KEY` and `MASTER_PASSWORD` are loaded from environment variables if set
+	- Never commit secrets to version control
+- **Requirements:**
+	- `Flask==2.3.3`, `Werkzeug==2.3.7` (see `requirements.txt`)
 
-**Data patterns and invariants**
-- Filenames are normalized: lowercased, spaces replaced with `_` (see upload handling in `app.py`).
-- Upload metadata: `add_upload_record()` appends objects to `uploads_metadata.json` with keys `filename`, `type`, `uploader`, `assigned_to`, `upload_date`.
-- Activity audit: `log_activity()` appends to `activity_log.json` (keeps last ~1000 entries).
+## Auth, Permissions, and Security
+- **Session-based login:**
+	- User records in `users/<username>.json` (fields: `username`, `password` (hashed), `is_admin`)
+	- `MASTER_PASSWORD` (from env/config) allows admin override, sets `session['username']='sysop'` and `is_admin=True`
+- **Admin-only endpoints:**
+	- All `/admin/*` routes require `is_admin` in session
 
-**APIs & important routes to reference**
-- Media listing: `GET /media/api/list` (collects from `static/images` and `static/videos`).
-- Text management: `GET /text/api/list`, `GET /text/api/load/<filename>`, `POST /text/api/new`, `POST /text/api/save`, `DELETE /text/api/delete/<filename>`.
-- Admin uploads endpoints: `/admin/uploads/api/list`, `/admin/uploads/api/reassign`, `/admin/uploads/api/delete` — require `is_admin`.
+## Data Handling & Invariants
+- **Filenames:** Always normalized (lowercase, spaces to `_`)
+- **Uploads:**
+	- Metadata appended to `uploads_metadata.json` via `add_upload_record()`
+	- Deletion/reassignment must update both file and metadata
+- **Audit:**
+	- All user actions logged via `log_activity()`
 
-**Run / Debug locally**
-- Install deps: `pip install -r requirements.txt`.
-- Run directly: `python app.py` (app checks `FLASK_DEBUG` env var to enable debug). Example — PowerShell:
+## API & Route Reference
+- **Media:** `GET /media/api/list` (lists images/videos)
+- **Text:** `GET /text/api/list`, `GET /text/api/load/<filename>`, `POST /text/api/new`, `POST /text/api/save`, `DELETE /text/api/delete/<filename>`
+- **Admin Uploads:** `/admin/uploads/api/list`, `/admin/uploads/api/reassign`, `/admin/uploads/api/delete` (admin only)
 
-```powershell
-$env:FLASK_DEBUG = 'true'
-python .\app.py
-```
+## Local Development Workflow
+- **Install:** `pip install -r requirements.txt`
+- **Run:** `python app.py` (set `FLASK_DEBUG=true` for debug mode)
+	- PowerShell: `$env:FLASK_DEBUG = 'true'; python .\app.py`
+	- Bash/cmd: `export FLASK_DEBUG=true; python app.py`
+- **No automated tests or CI:**
+	- Test changes by running the app and using the browser
 
-or bash/cmd:
+## Project Conventions & Gotchas
+- **Session contract:** Most routes require `session['username']` to be set
+- **Direct file I/O:** No DB transactions; be careful with concurrent writes
+- **Always update both metadata and logs** when modifying uploads or users
+- **No test/CI infra:** Keep changes small and test manually
 
-```bash
-export FLASK_DEBUG=true
-python app.py
-```
+## Examples
+- **Upload tracking:** See `add_upload_record()` in `app.py` and `uploads_metadata.json`
+- **Master login:** See `MASTER_PASSWORD` logic and `login()` in `app.py`
 
-**Important environment/config notes**
-- `SECRET_KEY` and `MASTER_PASSWORD` are read from environment variables first, then `config.json` fallback. Avoid committing secrets to `config.json` in production.
-- On Windows development environments, recommend using env vars rather than leaving `config.json` with secrets.
-
-**Conventions & small gotchas**
-- Many routes expect `session['username']` — creating or editing code should preserve that contract.
-- Files and user records are manipulated directly on disk (no DB transactions). Be conservative when changing write logic and consider concurrent access.
-- When adding features that touch uploads or users, update `uploads_metadata.json` and `activity_log.json` consistently using the existing helper functions to preserve format.
-
-**Where tests / CI are (not) present**
-- There are no tests or CI configuration in the repo. Keep changes small and test by running `python app.py` and exercising the relevant route in a browser.
-
-**Examples for quick reference**
-- To find where uploads are tracked: see `add_upload_record()` and `uploads_metadata.json`.
-- To reproduce master-login behavior, inspect the top of `app.py` (lines that read `MASTER_PASSWORD`) and the `login()` handler which sets `session['username']='sysop'`.
-
-If anything here looks incorrect or you want specific examples (route handlers, template patterns, or data-file schemas), tell me which area to expand and I'll update this file.
+---
+If you need more detail on any area (route handlers, template usage, data schemas), specify which topic to expand.
