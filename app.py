@@ -6,19 +6,41 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+from flask import send_from_directory
 
-# Use environment variable for secret key, fallback to config for local development
-if 'SECRET_KEY' in os.environ:
-    app.secret_key = os.environ['SECRET_KEY']
-else:
-    # Try to load from config.json for local development
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'images'),
+        'favicon.png', mimetype='image/png')
+
+
+# Use environment variable for secret key, fallback to config.json, then config.local.json
+def load_config_key(key, default=None):
+    # 1. Environment variable
+    if key in os.environ:
+        return os.environ[key]
+    # 2. config.json
     try:
         with open("config.json", "r") as f:
             config = json.load(f)
-            app.secret_key = config.get("SECRET_KEY", "supersecretkey")
+            val = config.get(key)
+            if val:
+                return val
     except Exception as e:
-        print(f"Warning reading config.json for SECRET_KEY: {e}")
-        app.secret_key = "supersecretkey"
+        pass
+    # 3. config.local.json
+    try:
+        with open("config.local.json", "r") as f:
+            config = json.load(f)
+            val = config.get(key)
+            if val:
+                return val
+    except Exception as e:
+        pass
+    return default
+
+app.secret_key = load_config_key("SECRET_KEY", "supersecretkey")
 
 # Upload folder
 UPLOAD_FOLDER = "uploads"
@@ -129,17 +151,9 @@ def get_storage_stats():
     return stats
 
 
-# Load master password
-if 'MASTER_PASSWORD' in os.environ:
-    MASTER_PASSWORD = os.environ['MASTER_PASSWORD']
-else:
-    try:
-        with open("config.json", "r") as f:
-            config = json.load(f)
-            MASTER_PASSWORD = config["MASTER_PASSWORD"]
-    except Exception as e:
-        print(f"Warning reading config.json for MASTER_PASSWORD: {e}")
-        MASTER_PASSWORD = "changeme"  # Fallback, should be set in production
+
+# Load master password (env > config.json > config.local.json)
+MASTER_PASSWORD = load_config_key("MASTER_PASSWORD", "changeme")
 
 
 # -------------------------------
@@ -692,6 +706,135 @@ def delete_user(username):
     return redirect("/admin/users")
 
 
+def infer_missing_relationships(member, family):
+    """
+    Infer missing relationships based on existing data.
+    For example: If Jane (spouse of John) has child Mary, then John should also have Mary as child.
+    """
+    member_id = member["id"]
+    id_to_member = {m["id"]: m for m in family if m["id"] != member_id}
+    
+    inferred_children = set(member.get("children", []))
+    inferred_parents = set(member.get("parents", []))
+    inferred_siblings = set(member.get("siblings", []))
+    
+    # Infer children from spouse's children
+    for spouse_id in member.get("spouse", []):
+        if spouse_id in id_to_member:
+            spouse = id_to_member[spouse_id]
+            # Add spouse's children as this member's children
+            for child_id in spouse.get("children", []):
+                if child_id != member_id:
+                    inferred_children.add(child_id)
+    
+    # Infer siblings from parents
+    for parent_id in member.get("parents", []):
+        if parent_id in id_to_member:
+            parent = id_to_member[parent_id]
+            # All parent's children (except self) are siblings
+            for child_id in parent.get("children", []):
+                if child_id != member_id:
+                    inferred_siblings.add(child_id)
+    
+    # Infer parents from siblings' parents
+    for sibling_id in member.get("siblings", []):
+        if sibling_id in id_to_member:
+            sibling = id_to_member[sibling_id]
+            # Siblings share parents
+            for parent_id in sibling.get("parents", []):
+                inferred_parents.add(parent_id)
+    
+    return {
+        "children": sorted(list(inferred_children)),
+        "parents": sorted(list(inferred_parents)),
+        "siblings": sorted(list(inferred_siblings))
+    }
+
+
+def sync_siblings_in_family(family):
+    id_to_member = {m["id"]: m for m in family}
+
+    # Build sibling graph using explicit siblings and shared parents
+    adjacency = {m["id"]: set() for m in family}
+
+    # Explicit siblings
+    for m in family:
+        for sid in m.get("siblings", []):
+            if sid in id_to_member and sid != m["id"]:
+                adjacency[m["id"]].add(sid)
+                adjacency[sid].add(m["id"])
+
+    # Shared parents imply siblings
+    parent_map = {}
+    for m in family:
+        for pid in m.get("parents", []):
+            parent_map.setdefault(pid, set()).add(m["id"])
+
+    for siblings_set in parent_map.values():
+        for mid in siblings_set:
+            adjacency[mid].update(siblings_set - {mid})
+
+    # Find connected components and apply full sibling lists
+    visited = set()
+    for member_id in adjacency.keys():
+        if member_id in visited:
+            continue
+        stack = [member_id]
+        component = set()
+        while stack:
+            current = stack.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            component.add(current)
+            stack.extend(adjacency[current] - visited)
+
+        for mid in component:
+            id_to_member[mid]["siblings"] = sorted(component - {mid})
+
+
+def sync_spouses_in_family(family):
+    id_to_member = {m["id"]: m for m in family}
+    for m in family:
+        for sid in list(m.get("spouse", [])):
+            if sid in id_to_member and sid != m["id"]:
+                other = id_to_member[sid]
+                if m["id"] not in other.get("spouse", []):
+                    other.setdefault("spouse", []).append(m["id"])
+            else:
+                # Remove invalid spouse IDs
+                m["spouse"] = [i for i in m.get("spouse", []) if i in id_to_member and i != m["id"]]
+
+
+
+
+
+@app.route("/admin/sync-siblings")
+@login_required
+def admin_sync_siblings():
+    if not session.get("is_admin"):
+        return "Access denied"
+
+    family_file = os.path.join("family", "family.json")
+    if not os.path.exists(family_file):
+        return "Family data not found"
+
+    with open(family_file, "r") as f:
+        family = json.load(f)
+
+    sync_siblings_in_family(family)
+    sync_spouses_in_family(family)
+
+    with open(family_file, "w") as f:
+        json.dump(family, f, indent=4)
+
+    log_activity("SYNC_SIBLINGS", session.get("username"), "Siblings lists normalized")
+    return redirect("/family")
+
+
+
+
+
 # -------------------------------
 # ADMIN: Upload Management
 # -------------------------------
@@ -847,7 +990,55 @@ def family_tree():
     if os.path.exists(family_file):
         with open(family_file, "r") as f:
             family = json.load(f)
-    return render_template("family.html", family=family)
+    # Sort alphabetically by first name, then last name
+    family = sorted(family, key=lambda m: (m.get('first_name', '').lower(), m.get('last_name', '').lower()))
+    return render_template("family.html", family=family, is_admin=session.get("is_admin", False))
+
+
+@app.route("/admin/delete_member/<int:member_id>", methods=["POST"])
+@login_required
+def admin_delete_member(member_id):
+    if not session.get("is_admin"):
+        return "Access denied"
+
+    family_file = os.path.join("family", "family.json")
+    if not os.path.exists(family_file):
+        return redirect("/family")
+
+    with open(family_file, "r") as f:
+        family = json.load(f)
+
+    member = next((m for m in family if m["id"] == member_id), None)
+    if not member:
+        return redirect("/family")
+
+    # Remove member from family list
+    family = [m for m in family if m["id"] != member_id]
+
+    # Remove references from other members
+    for m in family:
+        for key in ("parents", "children", "siblings", "spouse"):
+            if member_id in m.get(key, []):
+                m[key] = [i for i in m.get(key, []) if i != member_id]
+
+    # Clean up member photo if it exists and is a local file
+    photo = member.get("photo")
+    if photo and photo.startswith("/static/images/"):
+        photo_path = os.path.join(app.root_path, photo.lstrip("/"))
+        if os.path.exists(photo_path):
+            try:
+                os.remove(photo_path)
+            except OSError:
+                pass
+
+    # Normalize sibling lists after removal
+    sync_siblings_in_family(family)
+
+    with open(family_file, "w") as f:
+        json.dump(family, f, indent=4)
+
+    log_activity("DELETE_MEMBER", session.get("username"), f"Deleted member ID {member_id}")
+    return redirect("/family")
 
 
 # -------------------------------
@@ -867,9 +1058,10 @@ def add_member():
         new_id = max([m["id"] for m in family], default=0) + 1
         # Get form data
 
-        def resolve_to_ids(val, family):
+
+        def resolve_to_ids(val, family, next_id, rel_type, this_member_id=None):
             if not val:
-                return []
+                return [], next_id
             result = []
             for entry in val.split(","):
                 entry = entry.strip()
@@ -877,31 +1069,117 @@ def add_member():
                     result.append(int(entry))
                 else:
                     # Try to match by name (first and last)
+                    found = False
                     for m in family:
                         full_name = f"{m['first_name'].strip()} {m['last_name'].strip()}".lower()
                         if entry.lower() == full_name:
                             result.append(m['id'])
+                            found = True
                             break
-            return result
+                    if not found and entry:
+                        # Auto-add placeholder member
+                        parts = entry.split()
+                        first = parts[0] if len(parts) > 0 else "Unknown"
+                        last = parts[-1] if len(parts) > 1 else "Unknown"
+                        placeholder = {
+                            "id": next_id,
+                            "first_name": first,
+                            "middle_name": "",
+                            "maiden_name": "",
+                            "other_names": "",
+                            "last_name": last,
+                            "suffix": "",
+                            "birth_date": "",
+                            "death_date": None,
+                            "gender": "unknown",
+                            "parents": [],
+                            "children": [],
+                            "spouse": [],
+                            "siblings": [],
+                            "photo": None,
+                            "bio": "Auto-added placeholder. Update this member's info."
+                        }
+                        # Link this member to the placeholder reciprocally
+                        if rel_type == "parents" and this_member_id is not None:
+                            placeholder["children"] = [this_member_id]
+                        elif rel_type == "children" and this_member_id is not None:
+                            placeholder["parents"] = [this_member_id]
+                        elif rel_type == "spouse" and this_member_id is not None:
+                            placeholder["spouse"] = [this_member_id]
+                        elif rel_type == "siblings" and this_member_id is not None:
+                            placeholder["siblings"] = [this_member_id]
+                        family.append(placeholder)
+                        result.append(next_id)
+                        next_id += 1
+            return result, next_id
+
+        # Resolve relationships, auto-adding placeholders as needed
+        next_id = new_id + 1
+        parents, next_id = resolve_to_ids(request.form.get("parents", ""), family, next_id, "parents", new_id)
+        children, next_id = resolve_to_ids(request.form.get("children", ""), family, next_id, "children", new_id)
+        siblings, next_id = resolve_to_ids(request.form.get("siblings", ""), family, next_id, "siblings", new_id)
+        spouse, next_id = resolve_to_ids(request.form.get("spouse", ""), family, next_id, "spouse", new_id)
+
+        # Handle photo upload
+        photo_url = None
+        if "photo" in request.files:
+            file = request.files["photo"]
+            if file and file.filename:
+                ext = os.path.splitext(file.filename)[1].lower()
+                safe_name = f"member_{new_id}_{os.urandom(8).hex()}{ext}"
+                save_path = os.path.join("static", "images", safe_name)
+                file.save(save_path)
+                photo_url = safe_name  # Store just the filename, not the full path
 
         member = {
             "id": new_id,
             "first_name": request.form["first_name"],
             "middle_name": request.form.get("middle_name", ""),
+            "maiden_name": request.form.get("maiden_name", ""),
+            "other_names": request.form.get("other_names", ""),
             "last_name": request.form["last_name"],
             "suffix": request.form.get("suffix", ""),
             "birth_date": request.form["birth_date"],
             "death_date": request.form.get("death_date") or None,
             "gender": request.form["gender"],
-            "parents": resolve_to_ids(request.form.get("parents", ""), family),
-            "children": resolve_to_ids(request.form.get("children", ""), family),
-            "spouse": resolve_to_ids(request.form.get("spouse", ""), family),
-            "photo": None,
+            "parents": parents,
+            "children": children,
+            "siblings": siblings,
+            "spouse": spouse,
+            "photo": photo_url,
             "bio": request.form.get("bio", "")
         }
 
-        # Only use the member dict created above with resolve_to_ids
         family.append(member)
+        
+        # Propagate children to spouses automatically
+        id_to_member = {m["id"]: m for m in family}
+        for m in family:
+            for spouse_id in m.get("spouse", []):
+                if spouse_id in id_to_member:
+                    spouse = id_to_member[spouse_id]
+                    # Add this member's children to spouse's children
+                    for child_id in m.get("children", []):
+                        if child_id not in spouse.get("children", []):
+                            spouse.setdefault("children", []).append(child_id)
+                    # Add spouse's children to this member's children
+                    for child_id in spouse.get("children", []):
+                        if child_id not in m.get("children", []):
+                            m.setdefault("children", []).append(child_id)
+        
+        # Ensure sibling and spouse lists are symmetric across all related members
+        sibling_ids = set(siblings)
+        for m in family:
+            if m["id"] == new_id:
+                continue
+            if m["id"] in sibling_ids:
+                current = set(m.get("siblings", []))
+                current.add(new_id)
+                current.update(sibling_ids - {m["id"]})
+                m["siblings"] = sorted(current)
+        sync_spouses_in_family(family)
+        # Resort family to ensure all are visible and sorted
+        family = sorted(family, key=lambda m: (m.get('first_name', '').lower(), m.get('last_name', '').lower()))
         with open(family_file, "w") as f:
             json.dump(family, f, indent=4)
         return redirect("/family")
@@ -924,10 +1202,11 @@ def edit_member(member_id):
         return "Member not found", 404
     if request.method == "POST":
 
+
         import re
-        def resolve_to_ids(val, family):
+        def resolve_to_ids_auto(val, family, next_id, rel_type, this_member_id=None):
             if not val:
-                return []
+                return [], next_id
             result = []
             id_pattern = re.compile(r'\[(\d+)\]$')
             for entry in val.split(","):
@@ -939,28 +1218,225 @@ def edit_member(member_id):
                 elif entry.isdigit():
                     result.append(int(entry))
                 else:
+                    # Try to match by name (first and last)
+                    found = False
                     for m in family:
                         full_name = f"{m['first_name'].strip()} {m['last_name'].strip()}".lower()
                         if entry.lower() == full_name:
                             result.append(m['id'])
+                            found = True
                             break
-            return result
+                    if not found and entry:
+                        # Auto-add placeholder member
+                        parts = entry.split()
+                        first = parts[0] if len(parts) > 0 else "Unknown"
+                        last = parts[-1] if len(parts) > 1 else "Unknown"
+                        placeholder = {
+                            "id": next_id,
+                            "first_name": first,
+                            "middle_name": "",
+                            "maiden_name": "",
+                            "other_names": "",
+                            "last_name": last,
+                            "suffix": "",
+                            "birth_date": "",
+                            "death_date": None,
+                            "gender": "unknown",
+                            "parents": [],
+                            "children": [],
+                            "spouse": [],
+                            "siblings": [],
+                            "photo": None,
+                            "bio": "Auto-added placeholder. Update this member's info."
+                        }
+                        # Link this member to the placeholder reciprocally
+                        if rel_type == "parents" and this_member_id is not None:
+                            placeholder["children"] = [this_member_id]
+                        elif rel_type == "children" and this_member_id is not None:
+                            placeholder["parents"] = [this_member_id]
+                        elif rel_type == "spouse" and this_member_id is not None:
+                            placeholder["spouse"] = [this_member_id]
+                        elif rel_type == "siblings" and this_member_id is not None:
+                            placeholder["siblings"] = [this_member_id]
+                        family.append(placeholder)
+                        result.append(next_id)
+                        next_id += 1
+            # Add reciprocal links for existing members (after processing all entries)
+            for eid in result:
+                for m in family:
+                    if m["id"] == eid and this_member_id is not None:
+                        if rel_type == "parents":
+                            if this_member_id not in m.get("children", []):
+                                m.setdefault("children", []).append(this_member_id)
+                        elif rel_type == "children":
+                            if this_member_id not in m.get("parents", []):
+                                m.setdefault("parents", []).append(this_member_id)
+                        elif rel_type == "spouse":
+                            if this_member_id not in m.get("spouse", []):
+                                m.setdefault("spouse", []).append(this_member_id)
+                        elif rel_type == "siblings":
+                            if this_member_id not in m.get("siblings", []):
+                                m.setdefault("siblings", []).append(this_member_id)
+            return result, next_id
 
-        member["first_name"] = request.form["first_name"]
-        member["middle_name"] = request.form.get("middle_name", "")
-        member["last_name"] = request.form["last_name"]
-        member["suffix"] = request.form.get("suffix", "")
-        member["birth_date"] = request.form["birth_date"]
-        member["death_date"] = request.form.get("death_date") or None
-        member["gender"] = request.form["gender"]
-        member["parents"] = resolve_to_ids(request.form.get("parents", ""), family)
-        member["children"] = resolve_to_ids(request.form.get("children", ""), family)
-        member["spouse"] = resolve_to_ids(request.form.get("spouse", ""), family)
-        member["bio"] = request.form.get("bio", "")
-        with open(family_file, "w") as f:
-            json.dump(family, f, indent=4)
+        # Find the next available ID for new placeholders
+        next_id = max([m["id"] for m in family], default=0) + 1
+        # Auto-add and resolve relationships
+        siblings_input = request.form.get("siblings", "")
+        parents, next_id = resolve_to_ids_auto(request.form.get("parents", ""), family, next_id, "parents", member_id)
+        children, next_id = resolve_to_ids_auto(request.form.get("children", ""), family, next_id, "children", member_id)
+        siblings, next_id = resolve_to_ids_auto(siblings_input, family, next_id, "siblings", member_id)
+        spouse, next_id = resolve_to_ids_auto(request.form.get("spouse", ""), family, next_id, "spouse", member_id)
+
+        # Handle photo upload or preserve existing
+        photo_url = None
+        if "photo" in request.files:
+            file = request.files["photo"]
+            if file and file.filename:
+                ext = os.path.splitext(file.filename)[1].lower()
+                safe_name = f"member_{member_id}_{os.urandom(8).hex()}{ext}"
+                save_path = os.path.join("static", "images", safe_name)
+                file.save(save_path)
+                photo_url = safe_name  # Store just the filename, not the full path
+
+        # Update the member in the family list
+        updated = False
+        for i, m in enumerate(family):
+            if m["id"] == member_id:
+                family[i]["first_name"] = request.form["first_name"]
+                family[i]["middle_name"] = request.form.get("middle_name", "")
+                family[i]["maiden_name"] = request.form.get("maiden_name", "")
+                family[i]["other_names"] = request.form.get("other_names", "")
+                family[i]["last_name"] = request.form["last_name"]
+                family[i]["suffix"] = request.form.get("suffix", "")
+                family[i]["birth_date"] = request.form["birth_date"]
+                family[i]["death_date"] = request.form.get("death_date") or None
+                family[i]["gender"] = request.form["gender"]
+                family[i]["parents"] = parents
+                family[i]["children"] = children
+                family[i]["siblings"] = siblings
+                family[i]["spouse"] = spouse
+                family[i]["bio"] = request.form.get("bio", "")
+                if photo_url:
+                    family[i]["photo"] = photo_url
+                elif "photo" in family[i] and family[i]["photo"]:
+                    # Preserve existing photo if no new upload
+                    pass
+                else:
+                    family[i]["photo"] = None
+                updated = True
+                break
+        # Ensure sibling and spouse lists are normalized after edits
+        if updated:
+            # Propagate children to spouses
+            id_to_member = {m["id"]: m for m in family}
+            for m in family:
+                for spouse_id in m.get("spouse", []):
+                    if spouse_id in id_to_member:
+                        spouse = id_to_member[spouse_id]
+                        # Add this member's children to spouse's children
+                        for child_id in m.get("children", []):
+                            if child_id not in spouse.get("children", []):
+                                spouse.setdefault("children", []).append(child_id)
+                        # Add spouse's children to this member's children
+                        for child_id in spouse.get("children", []):
+                            if child_id not in m.get("children", []):
+                                m.setdefault("children", []).append(child_id)
+            
+            sync_siblings_in_family(family)
+            sync_spouses_in_family(family)
+        # Resort family to keep consistent order
+        family = sorted(family, key=lambda m: (m.get('first_name', '').lower(), m.get('last_name', '').lower()))
+        if updated:
+            with open(family_file, "w") as f:
+                json.dump(family, f, indent=4)
         return redirect("/family")
+    
+    # GET request: Infer missing relationships for display
+    inferred = infer_missing_relationships(member, family)
+    
+    # Merge inferred with existing (don't overwrite explicit entries)
+    member["_inferred_children"] = inferred["children"]
+    member["_inferred_parents"] = inferred["parents"]
+    member["_inferred_siblings"] = inferred["siblings"]
+    
     return render_template("edit_member.html", member=member, family=family)
+
+
+# -------------------------------
+# View Family Member
+# -------------------------------
+@app.route("/family/view/<int:member_id>")
+@app.route("/view_member/<int:member_id>")
+@login_required
+def view_member(member_id):
+    family_file = os.path.join("family", "family.json")
+    family = []
+    if os.path.exists(family_file):
+        with open(family_file, "r") as f:
+            family = json.load(f)
+    
+    member = next((m for m in family if m["id"] == member_id), None)
+    if not member:
+        return "Member not found", 404
+    
+    id_to_member = {m["id"]: m for m in family}
+    
+    # Add photo URLs - prepend path if not already there
+    if member.get("photo") and not member["photo"].startswith("/"):
+        member["photo_url"] = f"/static/images/{member['photo']}"
+        member["photo_thumb_url"] = f"/static/images/{member['photo']}"
+    else:
+        member["photo_url"] = member.get("photo")
+        member["photo_thumb_url"] = member.get("photo")
+    
+    # Get related members with photo URLs
+    parents = []
+    for pid in member.get("parents", []):
+        if pid in id_to_member:
+            p = id_to_member[pid].copy()
+            if p.get("photo") and not p["photo"].startswith("/"):
+                p["photo_thumb_url"] = f"/static/images/{p['photo']}"
+            else:
+                p["photo_thumb_url"] = p.get("photo")
+            parents.append(p)
+    
+    children = []
+    for cid in member.get("children", []):
+        if cid in id_to_member:
+            c = id_to_member[cid].copy()
+            if c.get("photo") and not c["photo"].startswith("/"):
+                c["photo_thumb_url"] = f"/static/images/{c['photo']}"
+            else:
+                c["photo_thumb_url"] = c.get("photo")
+            children.append(c)
+    
+    spouses = []
+    for sid in member.get("spouse", []):
+        if sid in id_to_member:
+            s = id_to_member[sid].copy()
+            if s.get("photo") and not s["photo"].startswith("/"):
+                s["photo_thumb_url"] = f"/static/images/{s['photo']}"
+            else:
+                s["photo_thumb_url"] = s.get("photo")
+            spouses.append(s)
+    
+    siblings = []
+    for sibid in member.get("siblings", []):
+        if sibid in id_to_member:
+            sib = id_to_member[sibid].copy()
+            if sib.get("photo") and not sib["photo"].startswith("/"):
+                sib["photo_thumb_url"] = f"/static/images/{sib['photo']}"
+            else:
+                sib["photo_thumb_url"] = sib.get("photo")
+            siblings.append(sib)
+    
+    return render_template("view_member.html", 
+                          member=member, 
+                          parents=parents, 
+                          children=children, 
+                          spouses=spouses,
+                          siblings=siblings)
 
 
 # -------------------------------
@@ -996,17 +1472,199 @@ def relationships():
     if os.path.exists(family_file):
         with open(family_file, "r") as f:
             family = json.load(f)
+    search_name = request.args.get("search", "").strip()
     relationships = []
-    for i, m1 in enumerate(family):
-        for j, m2 in enumerate(family):
-            if i < j:
-                rel = get_relationship(m1['id'], m2['id'], family)
+    selected_member = None
+    if search_name:
+        # Find member by name (case-insensitive, first + last)
+        selected_member = next((m for m in family if f"{m.get('first_name','').strip()} {m.get('last_name','').strip()}".lower() == search_name.lower()), None)
+        if selected_member:
+            for other in family:
+                if other["id"] == selected_member["id"]:
+                    continue
+                rel = get_relationship(selected_member["id"], other["id"], family)
                 relationships.append({
-                    'member1': f"{m1['first_name']} {m1['last_name']}",
-                    'member2': f"{m2['first_name']} {m2['last_name']}",
-                    'relationship': rel
+                    "member_name": f"{other.get('first_name','')} {other.get('last_name','')}",
+                    "relationship": rel
                 })
-    return render_template("relationships.html", relationships=relationships)
+    return render_template("relationships.html", family=family, search_name=search_name, relationships=relationships)
+
+
+# -------------------------------
+# ADMIN: Merge Duplicates
+# -------------------------------
+@app.route("/admin/merge-duplicates", methods=["GET", "POST"])
+@login_required
+def admin_merge_duplicates():
+    if not session.get("is_admin"):
+        return "Access denied", 403
+
+    family_file = os.path.join("family", "family.json")
+    if not os.path.exists(family_file):
+        return "Family data not found", 404
+
+    if request.method == "POST":
+        # Handle merge submission
+        if not request.form.get("confirm"):
+            return "Please confirm the merge", 400
+
+        primary_id = int(request.form.get("primary_id"))
+        duplicate_ids_str = request.form.get("duplicate_ids", "")
+        duplicate_ids = [int(x.strip()) for x in duplicate_ids_str.split(",") if x.strip()]
+
+        if primary_id not in duplicate_ids:
+            return "Primary ID must be one of the duplicates", 400
+
+        # Create backup before merge
+        import shutil
+        from datetime import datetime as dt
+        backup_file = os.path.join("family", f"family_before_merge_{dt.now().strftime('%Y%m%d_%H%M%S')}.json")
+        shutil.copy(family_file, backup_file)
+
+        # Load family data
+        with open(family_file, "r") as f:
+            family = json.load(f)
+
+        # Find members
+        primary = None
+        duplicates = []
+        for member in family:
+            if member["id"] == primary_id:
+                primary = member
+            elif member["id"] in duplicate_ids:
+                duplicates.append(member)
+
+        if not primary:
+            return "Primary member not found", 404
+
+        # Merge relationships from duplicates into primary
+        for dup in duplicates:
+            # Merge parents
+            for parent_id in dup.get("parents", []):
+                if parent_id not in primary.get("parents", []):
+                    primary.setdefault("parents", []).append(parent_id)
+            
+            # Merge children
+            for child_id in dup.get("children", []):
+                if child_id not in primary.get("children", []):
+                    primary.setdefault("children", []).append(child_id)
+            
+            # Merge spouse
+            for spouse_id in dup.get("spouse", []):
+                if spouse_id not in primary.get("spouse", []):
+                    primary.setdefault("spouse", []).append(spouse_id)
+            
+            # Merge siblings
+            for sib_id in dup.get("siblings", []):
+                if sib_id not in primary.get("siblings", []) and sib_id != primary_id:
+                    primary.setdefault("siblings", []).append(sib_id)
+
+            # Preserve photo if primary doesn't have one
+            if not primary.get("photo") and dup.get("photo"):
+                primary["photo"] = dup["photo"]
+
+            # Preserve bio if primary doesn't have one
+            if not primary.get("bio") and dup.get("bio"):
+                primary["bio"] = dup["bio"]
+
+        # Update all references in other family members to point to primary
+        for member in family:
+            if member["id"] == primary_id or member["id"] in duplicate_ids:
+                continue
+
+            # Update parents references
+            if "parents" in member:
+                member["parents"] = [primary_id if pid in duplicate_ids else pid for pid in member["parents"]]
+                member["parents"] = list(set(member["parents"]))  # Remove duplicates
+
+            # Update children references
+            if "children" in member:
+                member["children"] = [primary_id if cid in duplicate_ids else cid for cid in member["children"]]
+                member["children"] = list(set(member["children"]))
+
+            # Update spouse references
+            if "spouse" in member:
+                member["spouse"] = [primary_id if sid in duplicate_ids else sid for sid in member["spouse"]]
+                member["spouse"] = list(set(member["spouse"]))
+
+            # Update siblings references
+            if "siblings" in member:
+                member["siblings"] = [primary_id if sid in duplicate_ids else sid for sid in member["siblings"]]
+                member["siblings"] = list(set(member["siblings"]))
+
+        # Remove duplicate members from family list
+        family = [m for m in family if m["id"] not in duplicate_ids or m["id"] == primary_id]
+
+        # Clean up primary's own relationships (remove self-references and invalid IDs)
+        valid_ids = {m["id"] for m in family}
+        primary["parents"] = [i for i in primary.get("parents", []) if i in valid_ids and i != primary_id]
+        primary["children"] = [i for i in primary.get("children", []) if i in valid_ids and i != primary_id]
+        primary["spouse"] = [i for i in primary.get("spouse", []) if i in valid_ids and i != primary_id]
+        primary["siblings"] = [i for i in primary.get("siblings", []) if i in valid_ids and i != primary_id]
+
+        # Save updated family data
+        with open(family_file, "w") as f:
+            json.dump(family, f, indent=4)
+
+        # Log the merge
+        merged_names = ", ".join([f"{d.get('first_name', '')} {d.get('last_name', '')} (ID {d['id']})" for d in duplicates if d["id"] != primary_id])
+        log_activity(
+            "MERGE_DUPLICATES",
+            session.get("username"),
+            f"Merged {merged_names} into {primary.get('first_name', '')} {primary.get('last_name', '')} (ID {primary_id})"
+        )
+
+        return redirect("/family")
+
+    # GET request: Find duplicates
+    with open(family_file, "r") as f:
+        family = json.load(f)
+
+    # Group members by matching key fields
+    duplicate_groups = []
+    seen = set()
+
+    for i, member in enumerate(family):
+        if member["id"] in seen:
+            continue
+
+        # Create a key based on name and birth date
+        key = (
+            member.get("first_name", "").strip().lower(),
+            member.get("last_name", "").strip().lower(),
+            member.get("birth_date", "")
+        )
+
+        # Find all members with the same key
+        matches = []
+        for j, other in enumerate(family):
+            other_key = (
+                other.get("first_name", "").strip().lower(),
+                other.get("last_name", "").strip().lower(),
+                other.get("birth_date", "")
+            )
+            if other_key == key and other_key != ("", "", ""):
+                matches.append(other)
+                seen.add(other["id"])
+
+        # Only include groups with 2+ members
+        if len(matches) > 1:
+            duplicate_groups.append(matches)
+
+    # Helper function for template
+    def display_name(member):
+        name_parts = []
+        if member.get("first_name"):
+            name_parts.append(member["first_name"])
+        if member.get("middle_name"):
+            name_parts.append(member["middle_name"])
+        if member.get("last_name"):
+            name_parts.append(member["last_name"])
+        if member.get("suffix"):
+            name_parts.append(member["suffix"])
+        return " ".join(name_parts) or "Unnamed"
+
+    return render_template("admin_merge_duplicates.html", duplicate_groups=duplicate_groups, display_name=display_name)
 
 
 # -------------------------------

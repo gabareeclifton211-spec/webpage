@@ -1,5 +1,0 @@
-{
-    "username": "test_create_user",
-    "password": "pbkdf2:sha256:600000$VpdIYfz9jj1fx3Ez$a892c2ba8445cfb9cf57de05246deb65563f5de86d0630a4e77221cd43b90bc0",
-    "is_admin": false
-}

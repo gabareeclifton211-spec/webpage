@@ -59,13 +59,24 @@
         <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
     <div class="container">
         <h1>Add Family Member</h1>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
 
             <label for="first_name">First Name</label>
             <input type="text" id="first_name" name="first_name" required>
 
+
+
             <label for="middle_name">Middle Name</label>
             <input type="text" id="middle_name" name="middle_name">
+
+            <label for="photo">Photo / Avatar</label>
+            <input type="file" id="photo" name="photo" accept="image/*">
+
+            <label for="maiden_name">Maiden Name (if applicable)</label>
+            <input type="text" id="maiden_name" name="maiden_name" placeholder="e.g. Smith">
+
+            <label for="other_names">Other Names / Aliases</label>
+            <input type="text" id="other_names" name="other_names" placeholder="e.g. previous married names, nicknames">
 
 
             <label for="last_name">Last Name</label>
@@ -94,6 +105,10 @@
 
             <label for="children">Children (IDs, comma-separated)</label>
             <input type="text" id="children" name="children" placeholder="e.g. 2,5">
+
+
+            <label for="siblings">Siblings (IDs, comma-separated)</label>
+            <input type="text" id="siblings" name="siblings" placeholder="e.g. 6,7">
 
             <label for="spouse">Spouse(s) (IDs, comma-separated)</label>
             <input type="text" id="spouse" name="spouse" placeholder="e.g. 4">

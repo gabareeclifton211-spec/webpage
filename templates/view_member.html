@@ -69,6 +69,22 @@
               {% endfor %}
             </div>
           {% endif %}
+
+          {% if siblings %}
+            <div style="margin-top:14px;margin-bottom:8px;"><strong>Siblings</strong></div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              {% for sib in siblings if sib %}
+                <a href="{{ url_for('view_member', member_id=sib.id) }}" style="text-decoration:none;color:inherit;">
+                  {% if sib.photo_thumb_url %}
+                    <img src="{{ sib.photo_thumb_url }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ sib.first_name }}">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='images/default_avatar.svg') }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,215,0,0.6);" alt="{{ sib.first_name }}">
+                  {% endif %}
+                  <div style="text-align:center;font-size:13px;margin-top:4px;">{{ sib.first_name }} {{ sib.last_name }}</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
       </div>

@@ -26,20 +26,24 @@
             letter-spacing: 2px;
         }
         .tree-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 9px;
             list-style: none;
             padding: 0;
             margin: 0 auto;
-            max-width: 600px;
+            max-width: 900px;
         }
         .tree-list li {
             background: rgba(0,0,0,0.15);
-            margin: 12px 0;
-            padding: 18px 20px;
+            padding: 9px 10px;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 13px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 18px;
+            gap: 5px;
+            min-height: 110px;
         }
         .tree-list img {
             width: 60px;
@@ -78,35 +82,57 @@
         <ul class="tree-list">
             {% for member in family %}
             <li>
-                <img src="{{ member.photo or url_for('static', filename='images/default_avatar.png') }}" alt="Photo">
-                <div style="flex:1;">
-                    <strong>{{ member.first_name }} {{ member.last_name }}</strong><br>
-                    <span>{{ member.birth_date }}{% if member.death_date %} - {{ member.death_date }}{% endif %}</span><br>
-                    <span class="bio">{{ member.bio }}</span>
-                    <div style="margin-top:8px; font-size:14px; color:#ffd700;">
+                <a href="/view_member/{{ member.id }}" style="text-decoration:none; color:inherit;">
+                    <img src="{% if member.photo %}{{ url_for('static', filename='images/' + member.photo) }}{% else %}{{ url_for('static', filename='images/default_avatar.svg') }}{% endif %}" alt="Photo">
+                </a>
+                <div style="width:100%; text-align:center;">
+                    <a href="/view_member/{{ member.id }}" style="text-decoration:none; color:inherit;">
+                        <strong>
+                            {{ member.first_name }}
+                            {% if member.middle_name %}{{ member.middle_name }} {% endif %}
+                            {{ member.last_name }}
+                            {% if member.suffix %}{{ member.suffix }}{% endif %}
+                        </strong>
+                    </a><br>
+                    <span style="font-size:11px;">{{ member.birth_date }}{% if member.death_date %} - {{ member.death_date }}{% endif %}</span><br>
+                    <span class="bio" style="font-size:11px;">{{ member.bio }}</span>
+                    <div style="margin-top:4px; font-size:10px; color:#ffd700;">
                         {% if member.parents %}
                         Parents: {% for pid in member.parents %}
-                            {% set parent = family | selectattr('id', 'equalto', pid) | first %}
-                            {{ parent.first_name }} {{ parent.last_name }}{% if not loop.last %}, {% endif %}
+                            {% set parent = family | selectattr('id', 'equalto', pid) | first | default(none) %}
+                            {% if parent %}{{ parent.first_name }} {{ parent.last_name }}{% if not loop.last %}, {% endif %}{% endif %}
                         {% endfor %}<br>
                         {% endif %}
                         {% if member.children %}
                         Children: {% for cid in member.children %}
-                            {% set child = family | selectattr('id', 'equalto', cid) | first %}
-                            {{ child.first_name }} {{ child.last_name }}{% if not loop.last %}, {% endif %}
+                            {% set child = family | selectattr('id', 'equalto', cid) | first | default(none) %}
+                            {% if child %}{{ child.first_name }} {{ child.last_name }}{% if not loop.last %}, {% endif %}{% endif %}
+                        {% endfor %}<br>
+                        {% endif %}
+                        {% if member.siblings %}
+                        Siblings: {% for sibid in member.siblings %}
+                            {% set sib = family | selectattr('id', 'equalto', sibid) | first | default(none) %}
+                            {% if sib %}{{ sib.first_name }} {{ sib.last_name }}{% if not loop.last %}, {% endif %}{% endif %}
                         {% endfor %}<br>
                         {% endif %}
                         {% if member.spouse %}
                         Spouse(s): {% for sid in member.spouse %}
-                            {% set spouse = family | selectattr('id', 'equalto', sid) | first %}
-                            {{ spouse.first_name }} {{ spouse.last_name }}{% if not loop.last %}, {% endif %}
+                            {% set spouse = family | selectattr('id', 'equalto', sid) | first | default(none) %}
+                            {% if spouse %}{{ spouse.first_name }} {{ spouse.last_name }}{% if not loop.last %}, {% endif %}{% endif %}
                         {% endfor %}<br>
                         {% endif %}
                     </div>
                 </div>
-                <a href="/edit_member/{{ member.id }}" style="margin-left:20px;">
-                    <button style="background:#ffd700; color:#222; border:none; border-radius:6px; padding:8px 18px; font-size:15px; cursor:pointer;">Edit</button>
-                </a>
+                <div style="display:flex; gap:6px; margin-top:10px;">
+                    <a href="/edit_member/{{ member.id }}">
+                        <button style="background:#ffd700; color:#222; border:none; border-radius:6px; padding:8px 12px; font-size:13px; cursor:pointer;">Edit</button>
+                    </a>
+                    {% if is_admin %}
+                    <form method="post" action="/admin/delete_member/{{ member.id }}" onsubmit="return confirm('Delete this member? This cannot be undone.');">
+                        <button style="background:#e53935; color:#fff; border:none; border-radius:6px; padding:8px 12px; font-size:13px; cursor:pointer;">Delete</button>
+                    </form>
+                    {% endif %}
+                </div>
             </li>
             {% endfor %}
         </ul>

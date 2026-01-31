@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Merge Duplicates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #004e92, #000428);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .group {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: left;
+        }
+        th {
+            background: rgba(0,102,255,0.3);
+            color: #ffd700;
+        }
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .merge-btn {
+            padding: 8px 14px;
+            background: #ffd700;
+            color: #222;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .confirm {
+            font-size: 13px;
+            color: #ffdf7f;
+        }
+        .empty {
+            color: #aaa;
+            text-align: center;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <a href="/admin/dashboard" style="position:fixed;top:18px;left:18px;z-index:999;">
+        <button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Admin</button>
+    </a>
+
+    <div class="container">
+        <h1>Merge Duplicate Family Members</h1>
+
+        {% if duplicate_groups|length == 0 %}
+            <div class="empty">No duplicates found with identical fields.</div>
+        {% else %}
+            {% for group in duplicate_groups %}
+                <div class="group">
+                    <form method="post" action="/admin/merge-duplicates">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Primary</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Birth</th>
+                                    <th>Death</th>
+                                    <th>Gender</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in group %}
+                                <tr>
+                                    <td>
+                                        <input type="radio" name="primary_id" value="{{ member.id }}" {% if loop.first %}checked{% endif %}>
+                                    </td>
+                                    <td>{{ member.id }}</td>
+                                    <td>{{ display_name(member) }}</td>
+                                    <td>{{ member.birth_date }}</td>
+                                    <td>{{ member.death_date or "" }}</td>
+                                    <td>{{ member.gender }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <input type="hidden" name="duplicate_ids" value="{% for member in group %}{{ member.id }}{% if not loop.last %},{% endif %}{% endfor %}">
+                        <div class="actions">
+                            <label class="confirm">
+                                <input type="checkbox" name="confirm"> Confirm merge (cannot be undone)
+                            </label>
+                            <button type="submit" class="merge-btn">Merge Selected</button>
+                        </div>
+                    </form>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>

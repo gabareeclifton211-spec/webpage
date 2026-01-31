@@ -49,20 +49,52 @@
     <a href="/" style="position:fixed;top:18px;left:18px;z-index:999;"><button style="background:#ffd700;color:#222;border:none;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer;">Back to Home</button></a>
     <div class="container">
         <h1>Family Relationships</h1>
-        <table>
-            <tr>
-                <th>Member 1</th>
-                <th>Member 2</th>
-                <th>Relationship</th>
-            </tr>
-            {% for rel in relationships %}
-            <tr>
-                <td>{{ rel.member1 }}</td>
-                <td>{{ rel.member2 }}</td>
-                <td>{{ rel.relationship }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div style="display: flex; gap: 32px; align-items: flex-start;">
+            <div style="flex: 1; min-width: 220px;">
+                <form id="searchForm" method="get" action="">
+                    <label for="search">Search by Name:</label>
+                    <input type="text" id="search" name="search" placeholder="Enter name...">
+                    <button type="submit">Search</button>
+                </form>
+                <table>
+                    <tr>
+                        <th>Member Name</th>
+                    </tr>
+                    {% for m in family %}
+                    <tr>
+                        <td>
+                            <span class="member-link" style="cursor:pointer;color:#ffd700;text-decoration:underline;" onclick="searchByName('{{ m.first_name }} {{ m.last_name }}')">{{ m.first_name }} {{ m.last_name }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <script>
+                function searchByName(name) {
+                    document.getElementById('search').value = name;
+                    document.getElementById('searchForm').submit();
+                }
+                </script>
+            </div>
+            <div style="flex: 2;">
+                {% if search_name and relationships %}
+                    <h2>Relationships for {{ search_name }}</h2>
+                    <table>
+                        <tr>
+                            <th>Other Member</th>
+                            <th>Relationship</th>
+                        </tr>
+                        {% for rel in relationships %}
+                        <tr>
+                            <td>{{ rel.member_name }}</td>
+                            <td>{{ rel.relationship }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                {% elif search_name %}
+                    <p>No member found for '{{ search_name }}'.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </body>
 </html>
